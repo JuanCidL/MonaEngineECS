@@ -22,6 +22,7 @@ set(THIRD_PARTY_INCLUDE_DIRECTORIES
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/debug-draw"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/whereami2cpp/source"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/json/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/entt/single_include" 
 )
 
 set(MONA_INCLUDE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/source")
