@@ -37,97 +37,96 @@
 #include <filesystem>
 #include <string>
 
-namespace Mona {
+namespace Mona
+{
 
 	class Material;
-	class World {
+	class World
+	{
 	public:
 		friend class Engine;
 		friend class MonaTest;
-		
-		World(const World& world) = delete;
-		World& operator=(const World& world) = delete;
-		
-		GameObjectManager::size_type GetGameObjectCount() const noexcept;
-		bool IsValid(const BaseGameObjectHandle& handle) const noexcept;
-		template <typename ObjectType, typename ...Args>
-		GameObjectHandle<ObjectType> CreateGameObject(Args&& ... args) noexcept;
-		void DestroyGameObject(BaseGameObjectHandle& handle) noexcept;
-		void DestroyGameObject(GameObject& gameObject) noexcept;
 
-		template <typename ComponentType, typename ...Args>
-		ComponentHandle<ComponentType> AddComponent(BaseGameObjectHandle& objectHandle, Args&& ... args) noexcept;
-		template <typename ComponentType, typename ...Args>
-		ComponentHandle<ComponentType> AddComponent(GameObject& gameObject, Args&& ... args) noexcept;
+		World(const World &world) = delete;
+		World &operator=(const World &world) = delete;
+
+		GameObjectManager::size_type GetGameObjectCount() const noexcept;
+		bool IsValid(const BaseGameObjectHandle &handle) const noexcept;
+		template <typename ObjectType, typename... Args>
+		GameObjectHandle<ObjectType> CreateGameObject(Args &&...args) noexcept;
+		void DestroyGameObject(BaseGameObjectHandle &handle) noexcept;
+		void DestroyGameObject(GameObject &gameObject) noexcept;
+
+		template <typename ComponentType, typename... Args>
+		ComponentHandle<ComponentType> AddComponent(BaseGameObjectHandle &objectHandle, Args &&...args) noexcept;
+		template <typename ComponentType, typename... Args>
+		ComponentHandle<ComponentType> AddComponent(GameObject &gameObject, Args &&...args) noexcept;
 		template <typename ComponentType>
-		void RemoveComponent(const ComponentHandle<ComponentType>& handle) noexcept;
+		void RemoveComponent(const ComponentHandle<ComponentType> &handle) noexcept;
 		template <typename ComponentType>
-		ComponentHandle<ComponentType> GetComponentHandle(const BaseGameObjectHandle& objectHandle) const noexcept;
+		ComponentHandle<ComponentType> GetComponentHandle(const BaseGameObjectHandle &objectHandle) const noexcept;
 		template <typename ComponentType>
-		ComponentHandle<ComponentType> GetComponentHandle(const GameObject& gameObject) const noexcept;
+		ComponentHandle<ComponentType> GetComponentHandle(const GameObject &gameObject) const noexcept;
 		template <typename SiblingType, typename ComponentType>
-		ComponentHandle<SiblingType> GetSiblingComponentHandle(const ComponentHandle<ComponentType>& handle) noexcept;
+		ComponentHandle<SiblingType> GetSiblingComponentHandle(const ComponentHandle<ComponentType> &handle) noexcept;
 		template <typename ComponentType>
 		BaseComponentManager::size_type GetComponentCount() const noexcept;
 		template <typename ComponentType>
-		BaseGameObjectHandle GetOwner(const ComponentHandle<ComponentType>& handle) noexcept;
+		BaseGameObjectHandle GetOwner(const ComponentHandle<ComponentType> &handle) noexcept;
 
-		EventManager& GetEventManager() noexcept;
-		Input& GetInput() noexcept;
-		Window& GetWindow() noexcept;
+		EventManager &GetEventManager() noexcept;
+		Input &GetInput() noexcept;
+		Window &GetWindow() noexcept;
 		void EndApplication() noexcept;
 
-		void SetMainCamera(const ComponentHandle<CameraComponent>& cameraHandle) noexcept;
-		glm::vec3 MainCameraScreenPositionToWorld(const glm::ivec2& screenPos) noexcept;
-		const glm::vec3& GetAmbientLight() const { return m_ambientLight; }
-		void SetAmbientLight(const glm::vec3& light) { m_ambientLight = light; }
+		void SetMainCamera(const ComponentHandle<CameraComponent> &cameraHandle) noexcept;
+		glm::vec3 MainCameraScreenPositionToWorld(const glm::ivec2 &screenPos) noexcept;
+		const glm::vec3 &GetAmbientLight() const { return m_ambientLight; }
+		void SetAmbientLight(const glm::vec3 &light) { m_ambientLight = light; }
 		ComponentHandle<CameraComponent> GetMainCameraComponent() noexcept;
 		std::shared_ptr<Material> CreateMaterial(MaterialType type, bool isForSkinning = false) noexcept;
 
-
-		void SetGravity(const glm::vec3& gravity);
+		void SetGravity(const glm::vec3 &gravity);
 		glm::vec3 GetGravity() const;
-		ClosestHitRaycastResult ClosestHitRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo);
-		AllHitsRaycastResult AllHitsRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo);
+		ClosestHitRaycastResult ClosestHitRayTest(const glm::vec3 &rayFrom, const glm::vec3 &rayTo);
+		AllHitsRaycastResult AllHitsRayTest(const glm::vec3 &rayFrom, const glm::vec3 &rayTo);
 
-
-		void SetAudioListenerTransform(const ComponentHandle<TransformComponent>& transformHandle,
-			const glm::fquat& offRotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f)) noexcept;
+		void SetAudioListenerTransform(const ComponentHandle<TransformComponent> &transformHandle,
+									   const glm::fquat &offRotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f)) noexcept;
 		ComponentHandle<TransformComponent> GetAudioListenerTransform() noexcept;
 		void PlayAudioClip3D(std::shared_ptr<AudioClip> audioClip,
-			const glm::vec3& position = glm::vec3(0.0f),
-			float volume = 1.0f,
-			float pitch = 1.0f,
-			float radius = 1000.0f,
-			AudioSourcePriority priority = AudioSourcePriority::SoundPriorityMedium
-		);
+							 const glm::vec3 &position = glm::vec3(0.0f),
+							 float volume = 1.0f,
+							 float pitch = 1.0f,
+							 float radius = 1000.0f,
+							 AudioSourcePriority priority = AudioSourcePriority::SoundPriorityMedium);
 		void PlayAudioClip2D(std::shared_ptr<AudioClip> audioClip,
-			float volume = 1.0f,
-			float pitch = 1.0f,
-			AudioSourcePriority priority = AudioSourcePriority::SoundPriorityMedium);
+							 float volume = 1.0f,
+							 float pitch = 1.0f,
+							 AudioSourcePriority priority = AudioSourcePriority::SoundPriorityMedium);
 		float GetMasterVolume() const noexcept;
 		void SetMasterVolume(float volume) noexcept;
 
-		JointPose GetJointWorldPose(const ComponentHandle<SkeletalMeshComponent>& skeletalMeshHandel, uint32_t jointIndex) noexcept;
+		JointPose GetJointWorldPose(const ComponentHandle<SkeletalMeshComponent> &skeletalMeshHandel, uint32_t jointIndex) noexcept;
 
 		void SetBackgroundColor(float r, float g, float b, float alpha = 0.0f);
 
 	private:
-		World(Application& app);
+		World(Application &app);
 		~World();
 		void StartMainLoop() noexcept;
 		void Update(float timeStep) noexcept;
 
 		template <typename ComponentType>
-		auto& GetComponentManager() noexcept;
+		auto &GetComponentManager() noexcept;
 
-		template <typename ComponentType, typename ...ComponentTypes>
-		bool CheckDependencies(const GameObject& gameObject, DependencyList<ComponentTypes...> dl) const;
+		template <typename ComponentType, typename... ComponentTypes>
+		bool CheckDependencies(const GameObject &gameObject, DependencyList<ComponentTypes...> dl) const;
 
 		EventManager m_eventManager;
 		Input m_input;
 		Window m_window;
-		Application& m_application;
+		Application &m_application;
 		bool m_shouldClose;
 
 		GameObjectManager m_objectManager;
@@ -138,7 +137,7 @@ namespace Mona {
 		glm::vec3 m_ambientLight;
 
 		PhysicsCollisionSystem m_physicsCollisionSystem;
-		
+
 		AudioSystem m_audioSystem;
 		InnerComponentHandle m_audoListenerTransformHandle;
 		glm::fquat m_audioListenerOffsetRotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f);
@@ -148,11 +147,7 @@ namespace Mona {
 		std::unique_ptr<DebugDrawingSystem_ikNav> m_debugDrawingSystemIKNav;
 
 		IKNavigationSystem m_ikNavigationSystyem;
-
-		
 	};
-
-	
 
 }
 #include "Detail/World_Implementation.hpp"
