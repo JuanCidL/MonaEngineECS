@@ -10,7 +10,10 @@
 namespace Mona {
     class EnTTSystemManager {
     public :
-        EnTTSystemManager(entt::registry& registry) : m_registry(registry) {}
+        EnTTSystemManager(entt::registry& registry, entt::dispatcher& dispatcher) :
+            m_registry(registry),
+            m_dispatcher(dispatcher)
+        {}
 
         template<typename SystemType, typename... Args>
         SystemType& AddSystem(Args&&... args) {
@@ -39,24 +42,25 @@ namespace Mona {
 
         void StartUp() {
             for (auto& [typeIndex, system] : m_systems) {
-                system->StartUp(m_registry);
+                system->StartUp(m_registry, m_dispatcher);
             }
         }
 
         void Update(float deltaTime) {
             for (auto& [typeIndex, system] : m_systems) {
-                system->Update(m_registry, deltaTime);
+                system->Update(m_registry, m_dispatcher, deltaTime);
             }
         }
 
         void ShutDown() {
             for (auto& [typeIndex, system] : m_systems) {
-                system->ShutDown(m_registry);
+                system->ShutDown(m_registry, m_dispatcher);
             }
         }
     
     private:
         entt::registry& m_registry;
+        entt::dispatcher& m_dispatcher;
         std::unordered_map<std::type_index, std::unique_ptr<BaseSystem>> m_systems;
     };
 }

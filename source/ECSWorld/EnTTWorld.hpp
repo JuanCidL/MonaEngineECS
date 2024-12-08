@@ -5,8 +5,6 @@
 #include "ComponentTypes.hpp"
 #include "EnTTComponentManager.hpp"
 #include "EnTTSystemManager.hpp"
-#include "../Event/EventManager.hpp"
-
 
 namespace Mona {
 
@@ -14,13 +12,23 @@ namespace Mona {
     public:
         EnTTWorld() : 
             m_registry(),
+            m_dispatcher(),
             m_componentManager(m_registry),
             m_entityCount(0),
-            m_eventManager(),
-            m_systemManager(m_registry)
+            m_systemManager(m_registry, m_dispatcher)
         {}
         EnTTWorld(const EnTTWorld& world) = delete;
         EnTTWorld& operator=(const EnTTWorld& world) = delete;
+
+        // EnTT Handling
+
+        entt::registry& GetRegistry() {
+            return m_registry;
+        }
+
+        entt::dispatcher& GetDispatcher() {
+            return m_dispatcher;
+        }
 
         size_t GetGameObjectCount() {
             return m_entityCount;
@@ -84,9 +92,9 @@ namespace Mona {
 
     private:
         entt::registry m_registry;
+        entt::dispatcher m_dispatcher;
         EnTTComponentManager m_componentManager;
         size_t m_entityCount;
-        EventManager m_eventManager;
         EnTTSystemManager m_systemManager;
     };
 }
