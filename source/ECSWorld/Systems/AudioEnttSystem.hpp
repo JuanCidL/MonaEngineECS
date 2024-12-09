@@ -8,6 +8,7 @@
 #include <AL/alc.h>
 #include <entt/entt.hpp>
 #include "../World/TransformComponent.hpp"
+#include "./BaseSystem.hpp"
 #include "AudioClip.hpp"
 #include "AudioSource.hpp"
 #include "AudioSourceComponent.hpp"
@@ -16,24 +17,24 @@ namespace Mona
 	/*
 	 * Clase responsable de la logica del sistema de audio del motor.
 	 */
-	class EnttAudioSystem
+	class EnttAudioSystem : public BaseSystem
 	{
 	public:
 		/*
 		 * Funci�n llamada por el motor que inicializa el sistema de audio, el cual es capaz de reproducir channels audios simultaneamente.
 		 */
-		void StartUp() noexcept;
+		void StartUp(entt::registry &registry, entt::dispatcher &dispatcher) noexcept;
 
 		/*
 		 * Libera todos los recuros mantenidos por el sistema de audio, esta funci�n es llamada durante el proceso de cierre del motor.
 		 */
-		void ShutDown() noexcept;
+		void ShutDown(entt::registry &registry, entt::dispatcher &dispatcher) noexcept;
 
 		/*
 		 * Funci�n llamada cada iteraci�n del mainloop del motor
 		 */
 		void Update(entt::registry &registry,
-					const glm::fquat &audioListenerOffsetRotation,
+					entt::dispatcher &dispatcher,
 					float timeStep) noexcept;
 
 		/*

@@ -8,7 +8,7 @@
 #include <stdio.h>
 namespace Mona
 {
-	void EnttAudioSystem::StartUp() noexcept
+	void EnttAudioSystem::StartUp(entt::registry &registry, entt::dispatcher &dispatcher) noexcept
 	{
 		Config &config = Config::GetInstance();
 		const int channels = config.getValueOrDefault<int>("N_OPENAL_SOURCES", 32);
@@ -44,7 +44,7 @@ namespace Mona
 		m_firstFreeOpenALSourceIndex = 0;
 	}
 
-	void EnttAudioSystem::ShutDown() noexcept
+	void EnttAudioSystem::ShutDown(entt::registry &registry, entt::dispatcher &dispatcher) noexcept
 	{
 		alcMakeContextCurrent(NULL);
 		alcDestroyContext(m_audioContext);
@@ -52,7 +52,7 @@ namespace Mona
 	}
 
 	void EnttAudioSystem::Update(entt::registry &registry,
-								 const glm::fquat &audioListenerOffsetRotation,
+								 entt::dispatcher &dispatcher,
 								 float timeStep) noexcept
 	{
 
