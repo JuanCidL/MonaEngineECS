@@ -18,8 +18,8 @@ namespace Mona
                       m_dispatcher(),
                       m_componentManager(m_registry),
                       m_entityCount(0),
-                      m_systemManager(m_registry, m_dispatcher),
-                      m_eventManager(m_dispatcher)
+                      m_eventManager(m_dispatcher),
+                      m_systemManager(m_componentManager, m_eventManager)
         {
             auto worldEntity = m_registry.create();
             m_registry.emplace<EnTTWorld *>(worldEntity, this);

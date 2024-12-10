@@ -7,11 +7,12 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <entt/entt.hpp>
-#include "../World/TransformComponent.hpp"
+#include "../../World/TransformComponent.hpp"
 #include "./BaseSystem.hpp"
-#include "AudioClip.hpp"
-#include "AudioSource.hpp"
-#include "AudioSourceComponent.hpp"
+#include "../Audio/AudioClip.hpp"
+#include "../Audio/AudioSource.hpp"
+#include "../Audio/AudioSourceComponent.hpp"
+
 namespace Mona
 {
 	/*
@@ -23,19 +24,17 @@ namespace Mona
 		/*
 		 * Funci�n llamada por el motor que inicializa el sistema de audio, el cual es capaz de reproducir channels audios simultaneamente.
 		 */
-		void StartUp(entt::registry &registry, entt::dispatcher &dispatcher) noexcept;
+		void StartUp(EnTTComponentManager &componentManager, EnTTEventManager &eventManager) noexcept;
 
 		/*
 		 * Libera todos los recuros mantenidos por el sistema de audio, esta funci�n es llamada durante el proceso de cierre del motor.
 		 */
-		void ShutDown(entt::registry &registry, entt::dispatcher &dispatcher) noexcept;
+		void ShutDown(EnTTComponentManager &componentManager, EnTTEventManager &eventManager) noexcept;
 
 		/*
 		 * Funci�n llamada cada iteraci�n del mainloop del motor
 		 */
-		void Update(entt::registry &registry,
-					entt::dispatcher &dispatcher,
-					float timeStep) noexcept;
+		void Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float deltaTime) noexcept;
 
 		/*
 		 * Retorna el volumen global o maestro del sistema de audio
