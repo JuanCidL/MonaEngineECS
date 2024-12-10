@@ -70,9 +70,9 @@ namespace Mona {
             return m_componentManager.GetComponent<ComponentType>(entity);
         }
 
-        template<typename ComponentType>
-        void ForEachComponent(std::function<void(ComponentType&)> func) {
-            m_componentManager.ForEach<ComponentType>(func);
+        template<typename... ComponentTypes, typename Func>
+        void ForEachComponents(Func func) {
+            m_componentManager.ForEach<ComponentTypes...>(func);
         }
         
         // System Handling
