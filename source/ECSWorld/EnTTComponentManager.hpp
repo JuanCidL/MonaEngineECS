@@ -4,39 +4,46 @@
 #include "../World/ComponentTypes.hpp"
 #include <entt/entt.hpp>
 
-namespace Mona {
+namespace Mona
+{
 
-    class EnTTComponentManager {
+    class EnTTComponentManager
+    {
     public:
-        EnTTComponentManager(entt::registry& registry) : m_registry(registry) {}
+        EnTTComponentManager(entt::registry &registry) : m_registry(registry) {}
 
-        template<typename ComponentType, typename... Args>
-        ComponentType& AddComponent(entt::entity entity, Args&&... args) {
+        template <typename ComponentType, typename... Args>
+        ComponentType &AddComponent(entt::entity entity, Args &&...args)
+        {
             return m_registry.emplace<ComponentType>(entity, std::forward<Args>(args)...);
         }
 
-        template<typename ComponentType>
-        void RemoveComponent(entt::entity entity) {
+        template <typename ComponentType>
+        void RemoveComponent(entt::entity entity)
+        {
             m_registry.remove<ComponentType>(entity);
         }
 
-        template<typename ComponentType>
-        bool HasComponent(entt::entity entity) {
+        template <typename ComponentType>
+        bool HasComponent(entt::entity entity)
+        {
             return m_registry.has<ComponentType>(entity);
         }
 
-        template<typename ComponentType>
-        ComponentType& GetComponent(entt::entity entity) {
+        template <typename ComponentType>
+        ComponentType &GetComponent(entt::entity entity)
+        {
             return m_registry.get<ComponentType>(entity);
         }
 
-        template<typename ComponentType>
-        void ForEach(std::function<void(ComponentType&)> func) {
-            m_registry.view<ComponentType>().each(func);
+        template <typename... ComponentTypes, typename Func>
+        void ForEach(std::function<void(Func &)> func)
+        {
+            m_registry.view<ComponentTypes...>().each(func);
         }
 
     private:
-        entt::registry& m_registry;
+        entt::registry &m_registry;
     };
 }
 
