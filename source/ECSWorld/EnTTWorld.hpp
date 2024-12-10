@@ -7,6 +7,7 @@
 #include "EnTTSystemManager.hpp"
 #include "EnTTEventManager.hpp"
 #include "./systems/AudioEnttSystem.hpp"
+#include "../Rendering/CameraComponent.hpp"
 
 namespace Mona
 {
@@ -19,7 +20,8 @@ namespace Mona
                       m_componentManager(m_registry),
                       m_entityCount(0),
                       m_eventManager(m_dispatcher),
-                      m_systemManager(m_componentManager, m_eventManager)
+                      m_systemManager(m_componentManager, m_eventManager),
+                      m_currentCamera(nullptr)
         {
             auto worldEntity = m_registry.create();
             m_registry.emplace<EnTTWorld *>(worldEntity, this);
@@ -108,6 +110,18 @@ namespace Mona
             m_systemManager.Update(deltaTime);
         }
 
+        // Custom Component and Property Handling
+
+        void SetCurrentCamera(CameraComponent *camera)
+        {
+            m_currentCamera = camera;
+        }
+
+        CameraComponent *GetCurrentCamera()
+        {
+            return m_currentCamera;
+        }
+
     private:
         entt::registry m_registry;
         entt::dispatcher m_dispatcher;
@@ -116,6 +130,7 @@ namespace Mona
         EnTTSystemManager m_systemManager;
         EnTTEventManager m_eventManager;
         glm::fquat m_audioListenerOffsetRotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f);
+        CameraComponent* m_currentCamera;
 
         friend class Mona::EnttAudioSystem;
     };
