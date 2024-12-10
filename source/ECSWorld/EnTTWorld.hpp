@@ -5,6 +5,7 @@
 #include "ComponentTypes.hpp"
 #include "EnTTComponentManager.hpp"
 #include "EnTTSystemManager.hpp"
+#include "./systems/AudioEnttSystem.hpp"
 
 namespace Mona
 {
@@ -18,6 +19,8 @@ namespace Mona
                       m_entityCount(0),
                       m_systemManager(m_registry, m_dispatcher)
         {
+            auto worldEntity = m_registry.create();
+            m_registry.emplace<EnTTWorld *>(worldEntity, this);
         }
         EnTTWorld(const EnTTWorld &world) = delete;
         EnTTWorld &operator=(const EnTTWorld &world) = delete;
@@ -111,6 +114,8 @@ namespace Mona
         size_t m_entityCount;
         EnTTSystemManager m_systemManager;
         glm::fquat m_audioListenerOffsetRotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f);
+
+        friend class Mona::EnttAudioSystem;
     };
 }
 

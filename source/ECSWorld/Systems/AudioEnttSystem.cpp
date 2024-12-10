@@ -1,8 +1,9 @@
 #include "AudioEnttSystem.hpp"
 #include <algorithm>
-#include "../Core/Log.hpp"
-#include "../Core/Config.hpp"
-#include "../World/ComponentManager.hpp"
+#include "../../Core/Log.hpp"
+#include "../../Core/Config.hpp"
+#include "../../World/ComponentManager.hpp"
+#include "../EnTTWorld.hpp"
 #include "AudioMacros.hpp"
 #include "AudioSourceComponentLifetimePolicy.hpp"
 #include <stdio.h>
@@ -55,6 +56,15 @@ namespace Mona
 								 entt::dispatcher &dispatcher,
 								 float timeStep) noexcept
 	{
+		auto viewEnTTWorld = registry.view<Mona::EnTTWorld>();
+
+		glm::fquat audioListenerOffsetRotation;
+		for (auto entity : viewEnTTWorld)
+		{
+			// Es solo uno, pero el for es necesario.
+			Mona::EnTTWorld &world = viewEnTTWorld.get<Mona::EnTTWorld>(entity);
+			audioListenerOffsetRotation = world.m_audioListenerOffsetRotation;
+		}
 
 		auto viewAudioTransform = registry.view<AudioSourceComponent, TransformComponent>();
 		glm::vec3 listenerPosition = glm::vec3(0.0f);
