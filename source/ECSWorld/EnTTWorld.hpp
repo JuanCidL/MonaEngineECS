@@ -5,24 +5,22 @@
 #include "ComponentTypes.hpp"
 #include "EnTTComponentManager.hpp"
 #include "EnTTSystemManager.hpp"
+#include "EnTTEventManager.hpp"
 
-namespace Mona
-{
+namespace Mona {
 
-    class EnTTWorld
-    {
-        friend class RenderingSystem;
-
+    class EnTTWorld {
     public:
-        EnTTWorld() : m_registry(),
-                      m_dispatcher(),
-                      m_componentManager(m_registry),
-                      m_entityCount(0),
-                      m_systemManager(m_registry, m_dispatcher)
-        {
-        }
-        EnTTWorld(const EnTTWorld &world) = delete;
-        EnTTWorld &operator=(const EnTTWorld &world) = delete;
+        EnTTWorld() : 
+            m_registry(),
+            m_dispatcher(),
+            m_componentManager(m_registry),
+            m_entityCount(0),
+            m_systemManager(m_registry, m_dispatcher),
+            m_eventManager(m_dispatcher)
+        {}
+        EnTTWorld(const EnTTWorld& world) = delete;
+        EnTTWorld& operator=(const EnTTWorld& world) = delete;
 
         // EnTT Handling
 
@@ -81,10 +79,9 @@ namespace Mona
             return m_componentManager.GetComponent<ComponentType>(entity);
         }
 
-        template <typename ComponentType>
-        void ForEachComponent(std::function<void(ComponentType &)> func)
-        {
-            m_componentManager.ForEach<ComponentType>(func);
+        template<typename... ComponentTypes, typename Func>
+        void ForEachComponents(Func func) {
+            m_componentManager.ForEach<ComponentTypes...>(func);
         }
 
         // System Handling
@@ -114,6 +111,7 @@ namespace Mona
         EnTTSystemManager m_systemManager;
 
         glm::vec3 m_ambientLight;
+        EnTTEventManager m_eventManager;
     };
 }
 

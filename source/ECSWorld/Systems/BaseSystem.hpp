@@ -7,9 +7,9 @@ namespace Mona {
     class BaseSystem {
     public:
         BaseSystem() = default;
-        virtual void StartUp(entt::registry& registry, entt::dispatcher& dispatcher) = 0;
-        virtual void Update(entt::registry& registry, entt::dispatcher& dispatcher, float deltaTime) = 0;
-        virtual void ShutDown(entt::registry& registry, entt::dispatcher& dispatcher) = 0;
+        virtual void StartUp(EnTTComponentManager& componentManager, EnTTSystemManager& systemManager) = 0;
+        virtual void Update(EnTTComponentManager& componentManager, EnTTSystemManager& systemManager, float deltaTime) = 0;
+        virtual void ShutDown(EnTTComponentManager& componentManager, EnTTSystemManager& systemManager) = 0;
     };
 }
 
