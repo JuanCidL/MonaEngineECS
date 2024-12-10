@@ -3,7 +3,7 @@
 
 namespace Mona
 {
-    void RenderingSystem::StartUp(entt::registry &registry, entt::dispatcher &dispatcher)
+    void RenderingSystem::StartUp(EnTTComponentManager &componentManager, EnTTSystemManager &systemManager)
     {
         auto &config = Mona::Config::GetInstance();
         const unsigned int offset = static_cast<unsigned int>(MaterialType::MaterialTypeCount);
@@ -21,7 +21,7 @@ namespace Mona
         m_shaders[static_cast<unsigned int>(MaterialType::PBRFlat) + offset] = ShaderProgram(config.getPathOfEngineAsset("Shaders/PBRFlatSkinning.vs"), config.getPathOfEngineAsset("Shaders/PBRFlat.ps"));
         m_shaders[static_cast<unsigned int>(MaterialType::PBRTextured) + offset] = ShaderProgram(config.getPathOfEngineAsset("Shaders/PBRTexturedSkinning.vs"), config.getPathOfEngineAsset("Shaders/PBRTextured.ps"));
 
-        dispatcher.sink<WindowResizeEvent>().connect<&RenderingSystem::OnWindowResizeEvent>(this);
+        // dispatcher.sink<WindowResizeEvent>().connect<&RenderingSystem::OnWindowResizeEvent>(this);
         m_currentMatrixPalette.resize(NUM_MAX_BONES, glm::mat4(1.0f));
         glEnable(GL_DEPTH_TEST);
 
@@ -58,7 +58,7 @@ namespace Mona
         entt::entity cameraEntity{entt::null};
 
         registry.view<Mona::EnTTWorld>().each(
-            [&world, &cameraEntity](auto entity)
+            [&](entt::entity entity)
             {
                 world = &registry.get<Mona::EnTTWorld>(entity);
                 cameraEntity = world->cameraEntity;
@@ -67,7 +67,7 @@ namespace Mona
         if (cameraEntity != entt::null)
         {
             registry.view<CameraComponent, TransformComponent, GameObject>().each(
-                [&cameraEntity, &viewMatrix, &projectionMatrix, &cameraPosition](auto entity, auto &camera, auto &cameraTransform)
+                [&cameraEntity, &viewMatrix, &projectionMatrix, &cameraPosition](entt::entity entity, auto &camera, auto &cameraTransform)
                 {
                     if (cameraEntity == entity)
                     {
@@ -86,9 +86,63 @@ namespace Mona
 
         Lights lights;
         lights.ambientLight = world->m_ambientLight;
+
+        uint32_t directionalLightsCount = std::min(static_cast<uint32_t>(NUM_HALF_MAX_DIRECTIONAL_LIGHTS * 2), componentManager.GetComponentCount<DirectionalLightComponent>());
+        lights.directionalLightsCount = static_cast<int>(directionalLightsCount);
+        uint32_t i = 0;
+        registry.view<DirectionalLightComponent>()
+            .each([&](entt::entity entity, auto &dirLight)
+                  {
+                        if (i >= directionalLightsCount) return; 
+
+                        if (registry.all_of<TransformComponent>(entity)) {
+                            const auto& lightTransform = registry.get<TransformComponent>(entity);
+
+                            lights.directionalLights[i].colorIntensity = dirLight.GetLightColor();
+                            lights.directionalLights[i].direction = glm::rotate(
+                                dirLight.GetLightDirection(),
+                                lightTransform.GetFrontVector()
+                            );
+                        }
+
+                        ++i; });
+
+        uint32_t spotLightsCount = std::min(static_cast<uint32_t>(NUM_HALF_MAX_SPOT_LIGHTS * 2), componentManager.GetComponentCount<SpotLightComponent>());
+        lights.spotLightsCount = static_cast<int>(spotLightsCount);
+        i = 0;
+        registry.view<SpotLightComponent, GameObject, TransformComponent>()
+            .each([&](entt::entity entity, auto &spotLight, auto &lightTransform)
+                  {
+                    if(i >= spotLightsCount) return;
+
+                    lights.spotLights[i].colorIntensity = spotLight.GetLightColor();
+                    lights.spotLights[i].direction = glm::rotate(spotLight.GetLightDirection(), lightTransform->GetFrontVector());
+                    lights.spotLights[i].position = lightTransform->GetLocalTranslation();
+                    lights.spotLights[i].cosPenumbraAngle = glm::cos(spotLight.GetPenumbraAngle());
+                    lights.spotLights[i].cosUmbraAngle = glm::cos(spotLight.GetUmbraAngle());
+                    lights.spotLights[i].maxRadius = spotLight.GetMaxRadius(); 
+
+                    ++i; });
+
+        uint32_t pointLightsCount = std::min(static_cast<uint32_t>(NUM_HALF_MAX_POINT_LIGHTS * 2), componentManager.GetComponentCount<PointLightComponent>());
+        lights.pointLightsCount = static_cast<int>(pointLightsCount);
+        i = 0;
+        registry.view<PointLightComponent, TransformComponent, GameObject>()
+            .each([&](entt::entity entity, auto &pointLight, auto &lightTransform)
+                  {
+                    if(i >= pointLightsCount) return ;
+
+                    lights.pointLights[i].colorIntensity = pointLight.GetLightColor();
+                    lights.pointLights[i].position = lightTransform->GetLocalTranslation();
+                    lights.pointLights[i].maxRadius = pointLight.GetMaxRadius();
+                    ++i; });
+
+        glBindBuffer(GL_UNIFORM_BUFFER, m_lightDataUBO);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Lights), &lights);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
-    void RenderingSystem::ShutDown(entt::registry &registry, entt::dispatcher &dispatcher)
+    void RenderingSystem::ShutDown(EnTTComponentManager &componentManager, EnTTSystemManager &systemManager)
     {
         // eventManager.Unsubscribe(m_onWindowResizeSubscription);
         // Lo de arriba seria en torno al dispatcher
