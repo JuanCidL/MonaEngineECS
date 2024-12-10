@@ -32,7 +32,7 @@ namespace Mona
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_lightDataUBO);
     }
 
-    void RenderingSystem::Update(entt::registry &registry, entt::dispatcher &dispatcher, float deltaTime)
+    void RenderingSystem::Update(EnTTComponentManager &componentManager, EnTTSystemManager &systemManager, float deltaTime)
     {
         /**
          * El código original recibe:
@@ -47,7 +47,7 @@ namespace Mona
          * - spotLightDataManager
          * - pointLightDataManager
          * */
-
+        entt::registry &registry = componentManager.GetRegistry();
         glClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::mat4 viewMatrix;
