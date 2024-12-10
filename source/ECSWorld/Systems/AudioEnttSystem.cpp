@@ -86,45 +86,7 @@ namespace Mona
 		// Ambos tipos de fuentes avanzan sus timers en timeStep segundos
 		UpdateFreeAudioSourcesTimers(timeStep);
 
-		int audioDataCount = viewAudioNoTransform.size_hint() + viewAudioTransform.size_hint(); // This is only an estimate.
-		// Comienza la asignaci�n de fuentes de OpenAL a las fuentes del motor.
-		//  Hay que hacer el filtro dentro de la propia función
-		if (m_freeAudioSources.size() + audioDataCount <= m_openALSources.size())
-		{
-			// Si la suma de fuentes libres y fuentes lig
-	{
-		auto viewEnTTWorld = registry.view<Mona::EnTTWorld>();
-
-		glm::fquat audioListenerOffsetRotation;
-		for (auto entity : viewEnTTWorld)
-		{
-			// Es solo uno, pero el for es necesario.
-			Mona::EnTTWorld &world = viewEnTTWorld.get<Mona::EnTTWorld>(entity);
-			audioListenerOffsetRotation = world.m_audioListenerOffsetRotation;
-		}
-
-		auto viewAudioTransform = registry.view<AudioSourceComponent, TransformComponent>();
-		glm::vec3 listenerPosition = glm::vec3(0.0f);
-		for (auto [entity, audio, transform] : viewAudioTransform.each())
-		{
-			listenerPosition = transform.GetLocalTranslation();
-			glm::vec3 frontVector = glm::rotate(audioListenerOffsetRotation, transform.GetFrontVector());
-			glm::vec3 upVector = glm::rotate(audioListenerOffsetRotation, transform.GetUpVector());
-			UpdateListener(listenerPosition, frontVector, upVector);
-			UpdateAudioSourceComponentsTimers(timeStep, audio);
-		}
-
-		auto viewAudioNoTransform = registry.view<AudioSourceComponent>(entt::exclude<TransformComponent>);
-		viewAudioNoTransform.each([this, listenerPosition]()
-								  { UpdateListener(listenerPosition, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)); });
-
-		// Se remueven las fuentes libres que ya terminaron de reproducir su clip de audio
-		RemoveCompletedFreeAudioSources();
-
-		// Ambos tipos de fuentes avanzan sus timers en timeStep segundos
-		UpdateFreeAudioSourcesTimers(timeStep);
-
-		int audioDataCount = viewAudioNoTransform.size_hint() + viewAudioTransform.size_hint(); // This is only an estimate.
+		int audioDataCount = componentManager.GetComponentCount<AudioSourceComponent>();
 		// Comienza la asignaci�n de fuentes de OpenAL a las fuentes del motor.
 		//  Hay que hacer el filtro dentro de la propia función
 		if (m_freeAudioSources.size() + audioDataCount <= m_openALSources.size())
@@ -296,7 +258,7 @@ namespace Mona
 		// El proceso de actualizar las fuentes de audio usadas como componentes es un poco mas complejo.
 		// Ya que estas pueden estar en repetici�n, en pausa o detenidas.
 		if (audioComponent.m_sourceState == AudioSourceState::Paused || audioComponent.m_sourceState == AudioSourceState::Stopped)
-			continue;
+			return;
 		if (audioComponent.m_timeLeft < 0)
 			audioComponent.m_sourceState = AudioSourceState::Stopped;
 		audioComponent.m_timeLeft -= timeStep * audioComponent.m_pitch;
