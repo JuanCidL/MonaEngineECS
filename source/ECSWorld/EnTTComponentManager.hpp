@@ -59,7 +59,7 @@ namespace Mona
             m_registry.view<ComponentTypes...>().each(func);
         }
 
-        entt::registry &GetRegistry() const
+        entt::registry &GetRegistry()
         {
             return m_registry;
         }

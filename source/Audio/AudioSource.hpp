@@ -26,7 +26,7 @@ namespace Mona {
 
 	/*
 	* Enumerador que representa los tipos de fuentes de sonido. Las fuentes 2D se escuchan de igual manera independiente
-	* de la posición/velocidad relativa de la fuente y el receptor, en cambio, las fuentes 3D si se ven afectadas por estas
+	* de la posiciï¿½n/velocidad relativa de la fuente y el receptor, en cambio, las fuentes 3D si se ven afectadas por estas
 	* variables.
 	*/
 	enum class SourceType : uint8_t{
@@ -41,6 +41,7 @@ namespace Mona {
 	*/
 	struct AudioSource {
 		friend class  AudioSystem;
+		friend class EnttAudioSystem;
 		struct OpenALSource {
 			ALuint m_sourceID;
 			uint32_t m_sourceIndex;
@@ -85,6 +86,7 @@ namespace Mona {
 	class FreeAudioSource : public AudioSource {
 	public:
 		friend class  AudioSystem;
+		friend class EnttAudioSystem;
 		FreeAudioSource(std::shared_ptr<AudioClip> audioClip = nullptr,
 			float volume = 1.0f,
 			float pitch = 1.0f,
