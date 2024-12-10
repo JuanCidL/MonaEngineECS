@@ -48,9 +48,9 @@ namespace Mona {
             }
         }
 
-        void Update(float deltaTime) {
+        void Update(float timeStep) {
             for (auto& [typeIndex, system] : m_systems) {
-                system->Update(m_componentManager, m_eventManager, deltaTime);
+                system->Update(m_componentManager, m_eventManager, timeStep);
             }
         }
 

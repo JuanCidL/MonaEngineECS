@@ -105,9 +105,9 @@ namespace Mona
             m_systemManager.RemoveSystem<SystemType>();
         }
 
-        void UpdateSystems(float deltaTime)
+        void UpdateSystems(float timeStep)
         {
-            m_systemManager.Update(deltaTime);
+            m_systemManager.Update(timeStep);
         }
 
         // Custom Component and Property Handling

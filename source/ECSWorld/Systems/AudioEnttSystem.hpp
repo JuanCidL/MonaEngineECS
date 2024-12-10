@@ -34,7 +34,7 @@ namespace Mona
 		/*
 		 * Funci�n llamada cada iteraci�n del mainloop del motor
 		 */
-		void Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float deltaTime) noexcept;
+		void Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float timeStep) noexcept;
 
 		/*
 		 * Retorna el volumen global o maestro del sistema de audio

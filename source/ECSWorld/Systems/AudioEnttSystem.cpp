@@ -52,10 +52,10 @@ namespace Mona
 		alcCloseDevice(m_audioDevice);
 	}
 
-	void EnttAudioSystem::Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float deltaTime) noexcept
+	void EnttAudioSystem::Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float timeStep) noexcept
 	{
-		auto &registry = componentManager.GetRegistry();
-		auto viewEnTTWorld = registry.view<EnTTWorld>();
+		entt::registry &registry = componentManager.GetRegistry();
+		auto viewEnTTWorld = registry.view<Mona::EnTTWorld>();
 
 		glm::fquat audioListenerOffsetRotation;
 		for (auto entity : viewEnTTWorld)
