@@ -5,14 +5,16 @@
 #include <memory>
 #include <unordered_map>
 #include <typeindex>
+#include "./EnTTComponentManager.hpp"
+#include "./EnTTEventManager.hpp"
 #include "./Systems/BaseSystem.hpp"
 
 namespace Mona {
     class EnTTSystemManager {
     public :
-        EnTTSystemManager(entt::registry& registry, entt::dispatcher& dispatcher) :
-            m_registry(registry),
-            m_dispatcher(dispatcher)
+        EnTTSystemManager(EnTTComponentManager& componentManager, EnTTEventManager& eventManager) :
+            m_componentManager(componentManager),
+            m_eventManager(eventManager)
         {}
 
         template<typename SystemType, typename... Args>
@@ -42,25 +44,25 @@ namespace Mona {
 
         void StartUp() {
             for (auto& [typeIndex, system] : m_systems) {
-                system->StartUp(m_registry, m_dispatcher);
+                system->StartUp(m_componentManager, m_eventManager);
             }
         }
 
-        void Update(float deltaTime) {
+        void Update(float timeStep) {
             for (auto& [typeIndex, system] : m_systems) {
-                system->Update(m_registry, m_dispatcher, deltaTime);
+                system->Update(m_componentManager, m_eventManager, timeStep);
             }
         }
 
         void ShutDown() {
             for (auto& [typeIndex, system] : m_systems) {
-                system->ShutDown(m_registry, m_dispatcher);
+                system->ShutDown(m_componentManager, m_eventManager);
             }
         }
     
     private:
-        entt::registry& m_registry;
-        entt::dispatcher& m_dispatcher;
+        EnTTComponentManager& m_componentManager;
+        EnTTEventManager& m_eventManager;
         std::unordered_map<std::type_index, std::unique_ptr<BaseSystem>> m_systems;
     };
 }

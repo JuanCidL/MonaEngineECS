@@ -2,14 +2,16 @@
 #ifndef BASESYSTEM_HPP
 #define BASESYSTEM_HPP
 #include <entt/entt.hpp>
+#include "../EnTTComponentManager.hpp"
+#include "../EnTTEventManager.hpp"
 
 namespace Mona {
     class BaseSystem {
     public:
         BaseSystem() = default;
-        virtual void StartUp(entt::registry& registry, entt::dispatcher& dispatcher) = 0;
-        virtual void Update(entt::registry& registry, entt::dispatcher& dispatcher, float deltaTime) = 0;
-        virtual void ShutDown(entt::registry& registry, entt::dispatcher& dispatcher) = 0;
+        virtual void StartUp(EnTTComponentManager& componentManager, EnTTEventManager& systemManager) = 0;
+        virtual void Update(EnTTComponentManager& componentManager, EnTTEventManager& systemManager, float timeStep) = 0;
+        virtual void ShutDown(EnTTComponentManager& componentManager, EnTTEventManager& systemManager) = 0;
     };
 }
 
