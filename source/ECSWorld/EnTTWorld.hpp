@@ -14,6 +14,9 @@ namespace Mona
 
     class EnTTWorld
     {
+        friend class Mona::EnttAudioSystem;
+        friend class Mona::RenderingSystem;
+
     public:
         EnTTWorld() : m_registry(),
                       m_dispatcher(),
@@ -86,8 +89,9 @@ namespace Mona
             return m_componentManager.GetComponent<ComponentType>(entity);
         }
 
-        template<typename... ComponentTypes, typename Func>
-        void ForEachComponents(Func func) {
+        template <typename... ComponentTypes, typename Func>
+        void ForEachComponents(Func func)
+        {
             m_componentManager.ForEach<ComponentTypes...>(func);
         }
 
@@ -128,11 +132,11 @@ namespace Mona
         EnTTComponentManager m_componentManager;
         size_t m_entityCount;
         EnTTSystemManager m_systemManager;
+
+        glm::vec3 m_ambientLight;
         EnTTEventManager m_eventManager;
         glm::fquat m_audioListenerOffsetRotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f);
         CameraComponent* m_currentCamera;
-
-        friend class Mona::EnttAudioSystem;
     };
 }
 

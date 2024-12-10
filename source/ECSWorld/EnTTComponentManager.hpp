@@ -6,57 +6,67 @@
 #include "unordered_map"
 #include <any>
 
-namespace Mona {
+namespace Mona
+{
 
-    class EnTTComponentManager {
+    class EnTTComponentManager
+    {
     public:
-        EnTTComponentManager(entt::registry& registry) : m_registry(registry) {}
+        EnTTComponentManager(entt::registry &registry) : m_registry(registry) {}
 
-        template<typename ComponentType, typename... Args>
-        ComponentType& AddComponent(entt::entity entity, Args&&... args) {
-            if (m_componentCount.find(ComponentType) == m_componentCount.end()) {
+        template <typename ComponentType, typename... Args>
+        ComponentType &AddComponent(entt::entity entity, Args &&...args)
+        {
+            if (m_componentCount.find(ComponentType) == m_componentCount.end())
+            {
                 m_componentCount[ComponentType] = 1;
             }
-            else {
+            else
+            {
                 m_componentCount[ComponentType]++;
             }
             return m_registry.emplace<ComponentType>(entity, std::forward<Args>(args)...);
         }
 
-        template<typename ComponentType>
-        void RemoveComponent(entt::entity entity) {
+        template <typename ComponentType>
+        void RemoveComponent(entt::entity entity)
+        {
             m_registry.remove<ComponentType>(entity);
             m_componentCount[ComponentType]--;
         }
 
-        template<typename ComponentType>
-        bool HasComponent(entt::entity entity) {
+        template <typename ComponentType>
+        bool HasComponent(entt::entity entity)
+        {
             return m_registry.has<ComponentType>(entity);
         }
 
-        template<typename ComponentType>
-        ComponentType& GetComponent(entt::entity entity) {
+        template <typename ComponentType>
+        ComponentType &GetComponent(entt::entity entity)
+        {
             return m_registry.get<ComponentType>(entity);
         }
 
-        template<typename ComponentType>
-        uint32_t GetComponentCount() {
+        template <typename ComponentType>
+        uint32_t GetComponentCount()
+        {
             return m_componentCount[ComponentType];
         }
 
-        template<typename... ComponentTypes, typename Func>
-        void ForEach(Func func) {
+        template <typename... ComponentTypes, typename Func>
+        void ForEach(Func func)
+        {
             m_registry.view<ComponentTypes...>().each(func);
         }
 
-        entt::registry& GetRegistry() {
+        entt::registry &GetRegistry()
+        {
             return m_registry;
         }
 
     private:
-        entt::registry& m_registry;
+        entt::registry &m_registry;
         std::unordered_map<std::any, uint32_t> m_componentCount{};
-
     };
 }
 
