@@ -5,6 +5,7 @@
 #include "ComponentTypes.hpp"
 #include "EnTTComponentManager.hpp"
 #include "EnTTSystemManager.hpp"
+#include "EnTTEventManager.hpp"
 #include "./systems/AudioEnttSystem.hpp"
 
 namespace Mona
@@ -17,7 +18,8 @@ namespace Mona
                       m_dispatcher(),
                       m_componentManager(m_registry),
                       m_entityCount(0),
-                      m_systemManager(m_registry, m_dispatcher)
+                      m_systemManager(m_registry, m_dispatcher),
+                      m_eventManager(m_dispatcher)
         {
             auto worldEntity = m_registry.create();
             m_registry.emplace<EnTTWorld *>(worldEntity, this);
@@ -82,10 +84,9 @@ namespace Mona
             return m_componentManager.GetComponent<ComponentType>(entity);
         }
 
-        template <typename ComponentType>
-        void ForEachComponent(std::function<void(ComponentType &)> func)
-        {
-            m_componentManager.ForEach<ComponentType>(func);
+        template<typename... ComponentTypes, typename Func>
+        void ForEachComponents(Func func) {
+            m_componentManager.ForEach<ComponentTypes...>(func);
         }
 
         // System Handling
@@ -113,6 +114,7 @@ namespace Mona
         EnTTComponentManager m_componentManager;
         size_t m_entityCount;
         EnTTSystemManager m_systemManager;
+        EnTTEventManager m_eventManager;
         glm::fquat m_audioListenerOffsetRotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f);
 
         friend class Mona::EnttAudioSystem;

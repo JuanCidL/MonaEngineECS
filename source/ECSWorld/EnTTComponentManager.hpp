@@ -3,6 +3,8 @@
 #define ENTT_COMPONENT_MANAGER_H
 #include "../World/ComponentTypes.hpp"
 #include <entt/entt.hpp>
+#include "unordered_map"
+#include <any>
 
 namespace Mona {
 
@@ -12,12 +14,19 @@ namespace Mona {
 
         template<typename ComponentType, typename... Args>
         ComponentType& AddComponent(entt::entity entity, Args&&... args) {
+            if (m_componentCount.find(ComponentType) == m_componentCount.end()) {
+                m_componentCount[ComponentType] = 1;
+            }
+            else {
+                m_componentCount[ComponentType]++;
+            }
             return m_registry.emplace<ComponentType>(entity, std::forward<Args>(args)...);
         }
 
         template<typename ComponentType>
         void RemoveComponent(entt::entity entity) {
             m_registry.remove<ComponentType>(entity);
+            m_componentCount[ComponentType]--;
         }
 
         template<typename ComponentType>
@@ -31,12 +40,23 @@ namespace Mona {
         }
 
         template<typename ComponentType>
-        void ForEach(std::function<void(ComponentType&)> func) {
-            m_registry.view<ComponentType>().each(func);
+        uint32_t GetComponentCount() {
+            return m_componentCount[ComponentType];
+        }
+
+        template<typename... ComponentTypes, typename Func>
+        void ForEach(Func func) {
+            m_registry.view<ComponentTypes...>().each(func);
+        }
+
+        entt::registry& GetRegistry() const {
+            return m_registry;
         }
 
     private:
         entt::registry& m_registry;
+        std::unordered_map<std::any, uint32_t> m_componentCount{};
+
     };
 }
 
