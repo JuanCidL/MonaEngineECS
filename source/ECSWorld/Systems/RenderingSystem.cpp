@@ -85,7 +85,7 @@ namespace Mona
         }
 
         Lights lights;
-        lights.ambientLight = pworld->m_ambientLight;
+        lights.ambientLight = world->m_ambientLight;
 
         uint32_t directionalLightsCount = std::min(static_cast<uint32_t>(NUM_HALF_MAX_DIRECTIONAL_LIGHTS * 2), componentManager.GetComponentCount<DirectionalLightComponent>());
         lights.directionalLightsCount = static_cast<int>(directionalLightsCount);
