@@ -2,7 +2,7 @@
 
 namespace Mona
 {
-    void RenderingSystem::StartUp(EnTTComponentManager &componentManager, EnTTEventManager &eventManager)
+    void RenderingSystem::StartUp(EnTTComponentManager &componentManager, EnTTEventManager &eventManager) noexcept
     {
         auto &config = Mona::Config::GetInstance();
         const unsigned int offset = static_cast<unsigned int>(MaterialType::MaterialTypeCount);
@@ -31,7 +31,7 @@ namespace Mona
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_lightDataUBO);
     }
 
-    void RenderingSystem::Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float deltaTime)
+    void RenderingSystem::Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float deltaTime) noexcept
     {
         /**
          * El código original recibe:
@@ -151,18 +151,18 @@ namespace Mona
         componentManager.ForEach<SkeletalMeshComponent, TransformComponent>(
             [&](entt::entity entity, SkeletalMeshComponent &skeletalMesh, TransformComponent &transform)
             {
-                auto skinnedMesh = skeletalMesh.m_skinnedMeshPtr;
-                glBindVertexArray(skinnedMesh->GetVertexArrayID());
+                SkinnedMesh& skinnedMesh = *skeletalMesh.m_skinnedMeshPtr;
+                glBindVertexArray(skinnedMesh.GetVertexArrayID());
                 
                 auto &animController = skeletalMesh.GetAnimationController();
                 skeletalMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform.GetModelMatrix(), cameraPosition);
 			    glUniformMatrix4fv(ShaderProgram::BoneTransformShaderLocation, skeletalMesh.GetSkeleton()->JointCount(), GL_FALSE, (GLfloat*) m_currentMatrixPalette.data());
-			    glDrawElements(GL_TRIANGLES, skinnedMesh->GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
+			    glDrawElements(GL_TRIANGLES, skinnedMesh.GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
             }
         );
     }
 
-    void RenderingSystem::ShutDown(EnTTComponentManager &componentManager, EnTTEventManager &eventManager)
+    void RenderingSystem::ShutDown(EnTTComponentManager &componentManager, EnTTEventManager &eventManager) noexcept
     {
         eventManager.Unsubscribe(this, &RenderingSystem::OnWindowResizeEvent);
         glDeleteBuffers(1, &m_lightDataUBO);
@@ -207,5 +207,11 @@ namespace Mona
             return nullptr;
             break;
         }
+
+    }
+
+    void RenderingSystem::SetBackgroundColor(float r, float g, float b, float alpha)
+    {
+        m_backgroundColor = glm::vec4(r, g, b, alpha);
     }
 }

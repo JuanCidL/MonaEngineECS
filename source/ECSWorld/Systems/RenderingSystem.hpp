@@ -38,10 +38,9 @@ namespace Mona
 		void ShutDown(EnTTComponentManager &componentManager, EnTTEventManager &systemManager) noexcept; // En este caso el render es el update
 
 		std::shared_ptr<Material> CreateMaterial(MaterialType type, bool isForSkinning);
+		void SetBackgroundColor(float r, float g, float b, float alpha = 0.0f);
 	private:
 		void OnWindowResizeEvent(const WindowResizeEvent &event);
-		std::shared_ptr<Material> CreateMaterial(MaterialType type, bool isForSkinning);
-		void SetBackgroundColor(float r, float g, float b, float alpha = 0.0f);
 
 		struct DirectionalLight
 		{

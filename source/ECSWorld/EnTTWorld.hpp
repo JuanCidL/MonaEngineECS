@@ -2,20 +2,20 @@
 #ifndef ENTT_WORLD_H
 #define ENTT_WORLD_H
 #include <entt/entt.hpp>
-#include "ComponentTypes.hpp"
 #include "EnTTComponentManager.hpp"
 #include "EnTTSystemManager.hpp"
 #include "EnTTEventManager.hpp"
 #include "./systems/AudioEnttSystem.hpp"
 #include "./Systems/Systems.hpp"
+#include "../World/ComponentTypes.hpp"
 
 namespace Mona
 {
 
     class EnTTWorld
     {
-        friend class Mona::EnttAudioSystem;
-        friend class Mona::RenderingSystem;
+        friend class EnttAudioSystem;
+        friend class RenderingSystem;
 
     public:
         EnTTWorld() : m_registry(),
