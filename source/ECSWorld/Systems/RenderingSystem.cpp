@@ -207,4 +207,8 @@ namespace Mona
             break;
         }
     }
+    void RenderingSystem::SetBackgroundColor(float r, float g, float b, float alpha)
+    {
+        m_backgroundColor = glm::vec4(r, g, b, alpha);
+    }
 }
