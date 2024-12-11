@@ -24,6 +24,18 @@ namespace Mona {
             m_dispatcher.sink<EventType>().template connect<ObjType, &ObjType::memberFunction>(obj);
         }
 
+        // Unsubscribe from an event with a non-member function
+        template<typename EventType>
+        void Unsubscribe(void (*freeFunction)(const EventType&)) {
+            m_dispatcher.sink<EventType>().template disconnect<freeFunction>();
+        }
+
+        // Unsubscribe from an event with a member function
+        template<typename EventType, typename ObjType>
+        void Unsubscribe(ObjType* obj, void (ObjType::* memberFunction)(const EventType&)) {
+            m_dispatcher.sink<EventType>().template disconnect<ObjType, &ObjType::memberFunction>(obj);
+        }
+
         // Publish an event
         template<typename EventType>
         void Publish(const EventType& event) {

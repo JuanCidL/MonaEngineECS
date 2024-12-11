@@ -5,18 +5,20 @@
 #include <array>
 #include <glm/glm.hpp>
 #include <entt/entt.hpp>
-#include "BaseSystem.hpp"
-#include "../Event/Events.hpp"
+#include "./BaseSystem.hpp"
+#include "../EnTTWorld.hpp"
+#include "../../Event/Events.hpp"
 #include "../../World/ComponentTypes.hpp"
 #include "../../World/TransformComponent.hpp"
 #include "../../Animation/SkeletalMeshComponent.hpp"
-#include "../Rendering/StaticMeshComponent.hpp"
-#include "../Rendering/CameraComponent.hpp"
-#include "../Rendering/ShaderProgram.hpp"
-#include "../Rendering/DirectionalLightComponent.hpp"
-#include "../Rendering/SpotLightComponent.hpp"
-#include "../Rendering/PointLightComponent.hpp"
-#include "../Rendering/Material.hpp"
+#include "../../Animation/SkinnedMesh.hpp"
+#include "../../Rendering/StaticMeshComponent.hpp"
+#include "../../Rendering/CameraComponent.hpp"
+#include "../../Rendering/ShaderProgram.hpp"
+#include "../../Rendering/DirectionalLightComponent.hpp"
+#include "../../Rendering/SpotLightComponent.hpp"
+#include "../../Rendering/PointLightComponent.hpp"
+#include "../../Rendering/Material.hpp"
 #include "../../Core/Config.hpp"
 
 namespace Mona
@@ -24,16 +26,18 @@ namespace Mona
 
 	class RenderingSystem : public BaseSystem
 	{
+		
 	public:
 		static constexpr int NUM_HALF_MAX_DIRECTIONAL_LIGHTS = 1;
 		static constexpr int NUM_HALF_MAX_POINT_LIGHTS = 3;
 		static constexpr int NUM_HALF_MAX_SPOT_LIGHTS = 3;
 		static constexpr int NUM_MAX_BONES = 70;
 		RenderingSystem() = default;
-		void StartUp(EnTTComponentManager &componentManager, EnTTSystemManager &systemManager) override;
-		void Update(EnTTComponentManager &componentManager, EnTTSystemManager &systemManager, float deltaTime) override;
-		void ShutDown(EnTTComponentManager &componentManager, EnTTSystemManager &systemManager) override; // En este caso el render es el update
+		void StartUp(EnTTComponentManager &componentManager, EnTTEventManager &systemManager) noexcept;
+		void Update(EnTTComponentManager &componentManager, EnTTEventManager &systemManager, float deltaTime) noexcept;
+		void ShutDown(EnTTComponentManager &componentManager, EnTTEventManager &systemManager) noexcept; // En este caso el render es el update
 
+		std::shared_ptr<Material> CreateMaterial(MaterialType type, bool isForSkinning);
 	private:
 		void OnWindowResizeEvent(const WindowResizeEvent &event);
 		std::shared_ptr<Material> CreateMaterial(MaterialType type, bool isForSkinning);

@@ -1,9 +1,8 @@
 #include "RenderingSystem.hpp"
-#include "../EnTTWorld.hpp"
 
 namespace Mona
 {
-    void RenderingSystem::StartUp(EnTTComponentManager &componentManager, EnTTSystemManager &systemManager)
+    void RenderingSystem::StartUp(EnTTComponentManager &componentManager, EnTTEventManager &eventManager)
     {
         auto &config = Mona::Config::GetInstance();
         const unsigned int offset = static_cast<unsigned int>(MaterialType::MaterialTypeCount);
@@ -21,7 +20,7 @@ namespace Mona
         m_shaders[static_cast<unsigned int>(MaterialType::PBRFlat) + offset] = ShaderProgram(config.getPathOfEngineAsset("Shaders/PBRFlatSkinning.vs"), config.getPathOfEngineAsset("Shaders/PBRFlat.ps"));
         m_shaders[static_cast<unsigned int>(MaterialType::PBRTextured) + offset] = ShaderProgram(config.getPathOfEngineAsset("Shaders/PBRTexturedSkinning.vs"), config.getPathOfEngineAsset("Shaders/PBRTextured.ps"));
 
-        // dispatcher.sink<WindowResizeEvent>().connect<&RenderingSystem::OnWindowResizeEvent>(this);
+        eventManager.Subscribe(this, &RenderingSystem::OnWindowResizeEvent);
         m_currentMatrixPalette.resize(NUM_MAX_BONES, glm::mat4(1.0f));
         glEnable(GL_DEPTH_TEST);
 
@@ -32,7 +31,7 @@ namespace Mona
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_lightDataUBO);
     }
 
-    void RenderingSystem::Update(EnTTComponentManager &componentManager, EnTTSystemManager &systemManager, float deltaTime)
+    void RenderingSystem::Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float deltaTime)
     {
         /**
          * El código original recibe:
@@ -55,21 +54,21 @@ namespace Mona
         glm::vec3 cameraPosition(0.0f);
 
         Mona::EnTTWorld *world = nullptr;
-        entt::entity cameraEntity{entt::null};
+        entt::entity *cameraEntity{nullptr};
 
         registry.view<Mona::EnTTWorld>().each(
             [&](entt::entity entity)
             {
                 world = &registry.get<Mona::EnTTWorld>(entity);
-                cameraEntity = world->cameraEntity;
+                cameraEntity = world->GetCurrentCamera();
             });
 
-        if (cameraEntity != entt::null)
+        if (cameraEntity != nullptr)
         {
             registry.view<CameraComponent, TransformComponent, GameObject>().each(
                 [&cameraEntity, &viewMatrix, &projectionMatrix, &cameraPosition](entt::entity entity, auto &camera, auto &cameraTransform)
                 {
-                    if (cameraEntity == entity)
+                    if (*cameraEntity == entity)
                     {
                         viewMatrix = cameraTransform.GetViewMatrixFromTransform();
                         projectionMatrix = camera.GetProjectionMatrix();
@@ -140,12 +139,32 @@ namespace Mona
         glBindBuffer(GL_UNIFORM_BUFFER, m_lightDataUBO);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Lights), &lights);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        componentManager.ForEach<StaticMeshComponent, TransformComponent>(
+            [&](entt::entity entity, StaticMeshComponent &staticMesh, TransformComponent &transform)
+            {
+                glBindVertexArray(staticMesh.GetMeshVAOID());
+                staticMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform.GetModelMatrix(), cameraPosition);
+            }
+        );
+
+        componentManager.ForEach<SkeletalMeshComponent, TransformComponent>(
+            [&](entt::entity entity, SkeletalMeshComponent &skeletalMesh, TransformComponent &transform)
+            {
+                auto skinnedMesh = skeletalMesh.m_skinnedMeshPtr;
+                glBindVertexArray(skinnedMesh->GetVertexArrayID());
+                
+                auto &animController = skeletalMesh.GetAnimationController();
+                skeletalMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform.GetModelMatrix(), cameraPosition);
+			    glUniformMatrix4fv(ShaderProgram::BoneTransformShaderLocation, skeletalMesh.GetSkeleton()->JointCount(), GL_FALSE, (GLfloat*) m_currentMatrixPalette.data());
+			    glDrawElements(GL_TRIANGLES, skinnedMesh->GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
+            }
+        );
     }
 
-    void RenderingSystem::ShutDown(EnTTComponentManager &componentManager, EnTTSystemManager &systemManager)
+    void RenderingSystem::ShutDown(EnTTComponentManager &componentManager, EnTTEventManager &eventManager)
     {
-        // eventManager.Unsubscribe(m_onWindowResizeSubscription);
-        // Lo de arriba seria en torno al dispatcher
+        eventManager.Unsubscribe(this, &RenderingSystem::OnWindowResizeEvent);
         glDeleteBuffers(1, &m_lightDataUBO);
     }
 
@@ -154,5 +173,39 @@ namespace Mona
         if (event.width == 0 || event.height == 0)
             return;
         glViewport(0, 0, event.width, event.height);
+    }
+
+    std::shared_ptr<Material> RenderingSystem::CreateMaterial(MaterialType type, bool isForSkinning)
+    {
+        unsigned int offset = static_cast<unsigned int>(type);
+        offset = isForSkinning ? offset + static_cast<unsigned int>(MaterialType::MaterialTypeCount) : offset;
+
+        switch (type)
+        {
+        case MaterialType::UnlitFlat:
+            return std::make_shared<Material>(m_shaders[offset]);
+            break;
+        case MaterialType::UnlitTextured:
+            return std::make_shared<Material>(m_shaders[offset]);
+            break;
+        case MaterialType::DiffuseFlat:
+            return std::make_shared<Material>(m_shaders[offset]);
+            break;
+        case MaterialType::DiffuseTextured:
+            return std::make_shared<Material>(m_shaders[offset]);
+            break;
+        case MaterialType::PBRFlat:
+            return std::make_shared<Material>(m_shaders[offset]);
+            break;
+        case MaterialType::PBRTextured:
+            return std::make_shared<Material>(m_shaders[offset]);
+            break;
+        case MaterialType::MaterialTypeCount:
+            return std::make_shared<Material>(m_shaders[offset]);
+            break;
+        default:
+            return nullptr;
+            break;
+        }
     }
 }

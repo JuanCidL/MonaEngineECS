@@ -7,7 +7,7 @@
 #include "EnTTSystemManager.hpp"
 #include "EnTTEventManager.hpp"
 #include "./systems/AudioEnttSystem.hpp"
-#include "../Rendering/CameraComponent.hpp"
+#include "./Systems/Systems.hpp"
 
 namespace Mona
 {
@@ -116,12 +116,12 @@ namespace Mona
 
         // Custom Component and Property Handling
 
-        void SetCurrentCamera(CameraComponent *camera)
+        void SetCurrentCamera(entt::entity *camera)
         {
             m_currentCamera = camera;
         }
 
-        CameraComponent *GetCurrentCamera()
+        entt::entity *GetCurrentCamera()
         {
             return m_currentCamera;
         }
@@ -136,7 +136,7 @@ namespace Mona
         glm::vec3 m_ambientLight;
         EnTTEventManager m_eventManager;
         glm::fquat m_audioListenerOffsetRotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f);
-        CameraComponent* m_currentCamera;
+        entt::entity* m_currentCamera;
     };
 }
 

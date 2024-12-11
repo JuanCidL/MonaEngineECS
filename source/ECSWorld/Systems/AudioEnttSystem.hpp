@@ -7,11 +7,19 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <entt/entt.hpp>
-#include "../../World/TransformComponent.hpp"
+#include <algorithm>
+#include <stdio.h>
 #include "./BaseSystem.hpp"
-#include "../Audio/AudioClip.hpp"
-#include "../Audio/AudioSource.hpp"
-#include "../Audio/AudioSourceComponent.hpp"
+#include "../EnTTWorld.hpp"
+#include "../../Core/Config.hpp"
+#include "../../Core/Log.hpp"
+#include "../../World/TransformComponent.hpp"
+#include "../../Audio/AudioClip.hpp"
+#include "../../Audio/AudioSource.hpp"
+#include "../../Audio/AudioSourceComponent.hpp"
+#include "../../Audio/AudioMacros.hpp"
+#include "../../Audio/AudioSourceComponentLifetimePolicy.hpp"
+
 
 namespace Mona
 {

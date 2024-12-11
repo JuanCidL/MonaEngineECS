@@ -18,6 +18,7 @@ namespace Mona {
 	{
 	public:
 		friend class Renderer;
+		friend class RenderingSystem;
 		friend class World;
 		friend class AnimationSystem;
 		//using managerType = ComponentManager<SkeletalMeshComponent>;
