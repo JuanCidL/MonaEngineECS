@@ -84,7 +84,15 @@ set(MONA_HEADERS
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
 				DebugDrawing/IKNavigationDebugDraw.hpp
-				Utilities/BasicCameraControllers.hpp)
+				Utilities/BasicCameraControllers.hpp
+				ECSWorld/EnTTWorld.hpp
+				ECSWorld/EnTTComponentManager.hpp
+				ECSWorld/EnTTEventManager.hpp
+				ECSWorld/EnTTSystemManager.hpp
+				ECSWorld/Systems/AudioEnTTSystem.hpp
+				ECSWorld/Systems/RenderingSystem.hpp
+				ECSWorld/Systems/Systems.hpp
+				MetaWorld/MetaWorld.hpp)
 set(MONA_SOURCES
 				CharacterNavigation/AnimationValidator.cpp
 				CharacterNavigation/IKRigBase.cpp
@@ -124,7 +132,10 @@ set(MONA_SOURCES
 				DebugDrawing/ImGuiBuild.cpp
 				DebugDrawing/BulletDebugDraw.cpp
 				DebugDrawing/IKNavigationDebugDraw.cpp
-				DebugDrawing/DebugDrawingSystem.cpp)
+				DebugDrawing/DebugDrawingSystem.cpp
+				ECSWorld/Systems/AudioEnTTSystem.cpp
+				ECSWorld/Systems/RenderingSystem.cpp
+				MetaWorld/MetaWorld.cpp)
 file(GLOB_RECURSE Shaders  "${CMAKE_SOURCE_DIR}/Assets/Shaders/*")
 source_group("Shaders" FILES ${Shaders})
 

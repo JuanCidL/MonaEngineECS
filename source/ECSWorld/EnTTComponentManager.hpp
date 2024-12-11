@@ -3,8 +3,8 @@
 #define ENTT_COMPONENT_MANAGER_H
 #include "../World/ComponentTypes.hpp"
 #include <entt/entt.hpp>
+#include <typeindex>
 #include "unordered_map"
-#include <any>
 
 namespace Mona
 {
@@ -12,7 +12,7 @@ namespace Mona
     class EnTTComponentManager
     {
     public:
-        EnTTComponentManager(entt::registry &registry) : m_registry(registry) {}
+        EnTTComponentManager(entt::registry &registry) : m_registry(registry), m_componentCount{} {}
 
         template <typename ComponentType, typename... Args>
         ComponentType &AddComponent(entt::entity entity, Args &&...args)
@@ -38,7 +38,7 @@ namespace Mona
         template <typename ComponentType>
         bool HasComponent(entt::entity entity)
         {
-            return m_registry.has<ComponentType>(entity);
+            return m_registry.all_of<ComponentType>(entity);
         }
 
         template <typename ComponentType>
@@ -50,7 +50,7 @@ namespace Mona
         template <typename ComponentType>
         uint32_t GetComponentCount()
         {
-            return m_componentCount[ComponentType];
+            return m_componentCount[std::type_index(typeid(ComponentType))];
         }
 
         template <typename... ComponentTypes, typename Func>
@@ -66,7 +66,7 @@ namespace Mona
 
     private:
         entt::registry &m_registry;
-        std::unordered_map<std::any, uint32_t> m_componentCount{};
+        std::unordered_map<std::type_index, uint32_t> m_componentCount;
     };
 }
 

@@ -2,20 +2,20 @@
 #ifndef ENTT_WORLD_H
 #define ENTT_WORLD_H
 #include <entt/entt.hpp>
-#include "ComponentTypes.hpp"
 #include "EnTTComponentManager.hpp"
 #include "EnTTSystemManager.hpp"
 #include "EnTTEventManager.hpp"
 #include "./systems/AudioEnttSystem.hpp"
 #include "./Systems/Systems.hpp"
+#include "../World/ComponentTypes.hpp"
 
 namespace Mona
 {
 
     class EnTTWorld
     {
-        friend class Mona::EnttAudioSystem;
-        friend class Mona::RenderingSystem;
+        friend class EnttAudioSystem;
+        friend class RenderingSystem;
 
     public:
         EnTTWorld() : m_registry(),
@@ -24,7 +24,8 @@ namespace Mona
                       m_entityCount(0),
                       m_eventManager(m_dispatcher),
                       m_systemManager(m_componentManager, m_eventManager),
-                      m_currentCamera(nullptr)
+                      m_currentCamera(nullptr),
+                      m_ambientLight(glm::vec3{ 0.1f })
         {
             auto worldEntity = m_registry.create();
             m_registry.emplace<EnTTWorld *>(worldEntity, this);
