@@ -53,15 +53,16 @@ namespace Mona
         glm::mat4 projectionMatrix;
         glm::vec3 cameraPosition(0.0f);
 
+        auto viewEnTTWorld = registry.view<Mona::EnTTWorld>();
+
         Mona::EnTTWorld *world = nullptr;
         entt::entity *cameraEntity{nullptr};
-
-        registry.view<Mona::EnTTWorld>().each(
-            [&](entt::entity entity)
-            {
-                world = &registry.get<Mona::EnTTWorld>(entity);
-                cameraEntity = world->GetCurrentCamera();
-            });
+        for (auto entity : viewEnTTWorld)
+        {
+            // Es solo uno, pero el for es necesario.
+            Mona::EnTTWorld &world = viewEnTTWorld.get<Mona::EnTTWorld>(entity);
+            cameraEntity = world.GetCurrentCamera();
+        }
 
         if (cameraEntity != nullptr)
         {
@@ -145,21 +146,19 @@ namespace Mona
             {
                 glBindVertexArray(staticMesh.GetMeshVAOID());
                 staticMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform.GetModelMatrix(), cameraPosition);
-            }
-        );
+            });
 
         componentManager.ForEach<SkeletalMeshComponent, TransformComponent>(
             [&](entt::entity entity, SkeletalMeshComponent &skeletalMesh, TransformComponent &transform)
             {
                 auto skinnedMesh = skeletalMesh.m_skinnedMeshPtr;
                 glBindVertexArray(skinnedMesh->GetVertexArrayID());
-                
+
                 auto &animController = skeletalMesh.GetAnimationController();
                 skeletalMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform.GetModelMatrix(), cameraPosition);
-			    glUniformMatrix4fv(ShaderProgram::BoneTransformShaderLocation, skeletalMesh.GetSkeleton()->JointCount(), GL_FALSE, (GLfloat*) m_currentMatrixPalette.data());
-			    glDrawElements(GL_TRIANGLES, skinnedMesh->GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
-            }
-        );
+                glUniformMatrix4fv(ShaderProgram::BoneTransformShaderLocation, skeletalMesh.GetSkeleton()->JointCount(), GL_FALSE, (GLfloat *)m_currentMatrixPalette.data());
+                glDrawElements(GL_TRIANGLES, skinnedMesh->GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
+            });
     }
 
     void RenderingSystem::ShutDown(EnTTComponentManager &componentManager, EnTTEventManager &eventManager)
