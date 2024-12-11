@@ -53,14 +53,15 @@ namespace Mona
         glm::mat4 projectionMatrix;
         glm::vec3 cameraPosition(0.0f);
 
-        Mona::EnTTWorld *world = nullptr;
+        Mona::EnTTWorld* pworld = nullptr;
         entt::entity *cameraEntity{nullptr};
 
-        registry.view<Mona::EnTTWorld>().each(
+        registry.view<Mona::EnTTWorld *>().each(
             [&](entt::entity entity)
             {
-                world = &registry.get<Mona::EnTTWorld>(entity);
-                cameraEntity = world->GetCurrentCamera();
+                Mona::EnTTWorld& world = registry.get<Mona::EnTTWorld>(entity);
+                pworld = &world;
+                cameraEntity = pworld->GetCurrentCamera();
             });
 
         if (cameraEntity != nullptr)
@@ -84,7 +85,7 @@ namespace Mona
         }
 
         Lights lights;
-        lights.ambientLight = world->m_ambientLight;
+        lights.ambientLight = pworld->m_ambientLight;
 
         uint32_t directionalLightsCount = std::min(static_cast<uint32_t>(NUM_HALF_MAX_DIRECTIONAL_LIGHTS * 2), componentManager.GetComponentCount<DirectionalLightComponent>());
         lights.directionalLightsCount = static_cast<int>(directionalLightsCount);

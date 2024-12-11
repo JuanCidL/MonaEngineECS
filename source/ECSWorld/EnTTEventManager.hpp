@@ -15,19 +15,19 @@ namespace Mona {
         // Subscribe to an event with a non-member function
         template<typename EventType>
         void Subscribe(void (*freeFunction)(const EventType&)) {
-            m_dispatcher.sink<EventType>().template connect<freeFunction>();
+            m_dispatcher.sink<EventType>().connect<freeFunction>();
         }
         
         // Subscribe to an event with a member function
         template<typename EventType, typename ObjType>
         void Subscribe(ObjType* obj, void (ObjType::* memberFunction)(const EventType&)) {
-            m_dispatcher.sink<EventType>().template connect<ObjType, &ObjType::memberFunction>(obj);
+            m_dispatcher.sink<EventType>().connect<ObjType, &ObjType::memberFunction>(obj);
         }
 
         // Unsubscribe from an event with a non-member function
         template<typename EventType>
         void Unsubscribe(void (*freeFunction)(const EventType&)) {
-            m_dispatcher.sink<EventType>().template disconnect<freeFunction>();
+            m_dispatcher.sink<EventType>().disconnect<freeFunction>();
         }
 
         // Unsubscribe from an event with a member function

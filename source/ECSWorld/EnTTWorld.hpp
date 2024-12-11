@@ -24,7 +24,8 @@ namespace Mona
                       m_entityCount(0),
                       m_eventManager(m_dispatcher),
                       m_systemManager(m_componentManager, m_eventManager),
-                      m_currentCamera(nullptr)
+                      m_currentCamera(nullptr),
+                      m_ambientLight(glm::vec3{ 0.1f })
         {
             auto worldEntity = m_registry.create();
             m_registry.emplace<EnTTWorld *>(worldEntity, this);

@@ -2,7 +2,9 @@
 #ifndef AUDIOSOURCECOMPONENTLIFETIMEPOLICY_HPP
 #define AUDIOSOURCECOMPONENTLIFETIMEPOLICY_HPP
 #include "AudioSystem.hpp"
+#include "../ECSWorld/Systems/AudioEnttSystem.hpp"
 #include "AudioSourceComponent.hpp"
+#include "../World/GameObject.hpp"
 namespace Mona {
 	class GameObject;
 	/*
@@ -13,9 +15,10 @@ namespace Mona {
 	class AudioSourceComponentLifetimePolicy {
 	public:
 		AudioSourceComponentLifetimePolicy() = default;
-		AudioSourceComponentLifetimePolicy(AudioSystem* audioSystem) : m_audioSystem(audioSystem) {}
+		AudioSourceComponentLifetimePolicy(AudioSystem* audioSystem) : m_audioSystem(audioSystem), m_enttaudioSystem(nullptr) {}
+		AudioSourceComponentLifetimePolicy(EnttAudioSystem* audioSystem) : m_enttaudioSystem(audioSystem), m_audioSystem(nullptr) {}
 		void OnAddComponent(GameObject* gameObjectPtr, AudioSourceComponent& audioSource, const InnerComponentHandle& handle) {
-			//Configura el vamor del handle que representa la transformada para asi poder obtener la información espacial necesaria
+			//Configura el vamor del handle que representa la transformada para asi poder obtener la informaciï¿½n espacial necesaria
 			// para el sistema de audio a partir de la transformada del GameObject al que se le esta agregando esta componente
 			audioSource.SetTransformHandle(gameObjectPtr->GetInnerComponentHandle<TransformComponent>());
 		}
@@ -30,6 +33,7 @@ namespace Mona {
 
 	private:
 		AudioSystem* m_audioSystem;
+		EnttAudioSystem* m_enttaudioSystem;
 	};
 }
 #endif
