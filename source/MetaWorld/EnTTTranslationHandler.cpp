@@ -1,16 +1,25 @@
 #include "./EnTTTranslationHandler.hpp"
 #include "./MetaWorld.hpp"
 
-namespace Mona {
+namespace Mona
+{
 
-    // EnTTTranslationHandler Implementation
-
-    void EnTTTranslationHandler::SetWorld(MetaWorld* world) {
+    /**
+     * etter del MetaWorld
+     *
+     * @param world Puntero a la clase MetaWorld que se esta utilizando.
+     */
+    void EnTTTranslationHandler::SetWorld(MetaWorld *world)
+    {
         m_metaWorld = world;
     }
 
-    void EnTTTranslationHandler::SubscribeEnTTToEventManager() {
-        auto& eventManager = m_metaWorld->GetWorld().GetEventManager();
+    /**
+     * Suscribe el EnTTTranslationHandler a los eventos del EventManager del World.
+     */
+    void EnTTTranslationHandler::SubscribeEnTTToEventManager()
+    {
+        auto &eventManager = m_metaWorld->GetWorld().GetEventManager();
         eventManager.Subscribe(m_windowResizeSubscribtion, this, &EnTTTranslationHandler::EnTTOnWindowResize);
         eventManager.Subscribe(m_mouseScrollSubscribtion, this, &EnTTTranslationHandler::EnTTOnMouseScroll);
         eventManager.Subscribe(m_gameObjectDestroyedSubscribtion, this, &EnTTTranslationHandler::EnTTOnGameObjectDestroyed);
@@ -21,7 +30,11 @@ namespace Mona {
         eventManager.Subscribe(m_customUserSubscribtion, this, &EnTTTranslationHandler::OnCustomUser);
     }
 
-    void EnTTTranslationHandler::SubscribeEventManagerToEnTT() {
+    /**
+     * Suscribe los eventos normales a los eventos de EnTT.
+     */
+    void EnTTTranslationHandler::SubscribeEventManagerToEnTT()
+    {
         RegistryEnTTEvent<WindowResizeEvent>();
         RegistryEnTTEvent<MouseScrollEvent>();
         RegistryEnTTEvent<GameObjectDestroyedEvent>();
@@ -32,35 +45,91 @@ namespace Mona {
         RegistryEnTTEvent<CustomUserEvent>();
     }
 
-    void EnTTTranslationHandler::EnTTOnWindowResize(const WindowResizeEvent& event) {
+    /**
+     * Metodo que se encarga de reenviar el evento de cambio de tamaño de ventana
+     * desde el EventManager del World hacia el EnTTWorld.
+     *
+     * @param event Evento de cambio de tamaño de ventana.
+     */
+    void EnTTTranslationHandler::EnTTOnWindowResize(const WindowResizeEvent &event)
+    {
         m_metaWorld->GetEnTTWorld().GetDispatcher().trigger(event);
     }
 
-    void EnTTTranslationHandler::EnTTOnMouseScroll(const MouseScrollEvent& event) {
+    /**
+     * Metodo que se encarga de reenviar el evento de scroll de mouse
+     * desde el EventManager del World hacia el EnTTWorld.
+     *
+     * @param event Evento de scroll de mouse.
+     */
+    void EnTTTranslationHandler::EnTTOnMouseScroll(const MouseScrollEvent &event)
+    {
         m_metaWorld->GetEnTTWorld().GetDispatcher().trigger(event);
     }
 
-    void EnTTTranslationHandler::EnTTOnGameObjectDestroyed(const GameObjectDestroyedEvent& event) {
+    /**
+     * Metodo que se encarga de reenviar el evento de destrucción de objeto del juego
+     * desde el EventManager del World hacia el EnTTWorld.
+     *
+     * @param event Evento de destrucción de objeto del juego.
+     */
+    void EnTTTranslationHandler::EnTTOnGameObjectDestroyed(const GameObjectDestroyedEvent &event)
+    {
         m_metaWorld->GetEnTTWorld().GetDispatcher().trigger(event);
     }
 
-    void EnTTTranslationHandler::EnTTOnApplicationEnd(const ApplicationEndEvent& event) {
+    /**
+     * Metodo que se encarga de reenviar el evento de finalización de la aplicación
+     * desde el EventManager del World hacia el EnTTWorld.
+     *
+     * @param event Evento de finalización de la aplicación.
+     */
+    void EnTTTranslationHandler::EnTTOnApplicationEnd(const ApplicationEndEvent &event)
+    {
         m_metaWorld->GetEnTTWorld().GetDispatcher().trigger(event);
     }
 
-    void EnTTTranslationHandler::EnTTOnDebugGUI(const DebugGUIEvent& event) {
+    /**
+     * Metodo que se encarga de reenviar el evento de depuración de la interfaz
+     * desde el EventManager del World hacia el EnTTWorld.
+     *
+     * @param event Evento de depuración de la interfaz.
+     */
+    void EnTTTranslationHandler::EnTTOnDebugGUI(const DebugGUIEvent &event)
+    {
         m_metaWorld->GetEnTTWorld().GetDispatcher().trigger(event);
     }
 
-    void EnTTTranslationHandler::EnTTOnStartCollision(const StartCollisionEvent& event) {
+    /**
+     * Metodo que se encarga de reenviar el evento de inicio de colision entre
+     * objetos del juego desde el EventManager del World hacia el EnTTWorld.
+     *
+     * @param event Evento de inicio de colision entre objetos del juego.
+     */
+    void EnTTTranslationHandler::EnTTOnStartCollision(const StartCollisionEvent &event)
+    {
         m_metaWorld->GetEnTTWorld().GetDispatcher().trigger(event);
     }
 
-    void EnTTTranslationHandler::EnTTOnEndCollision(const EndCollisionEvent& event) {
+    /**
+     * Metodo que se encarga de reenviar el evento de fin de colision entre
+     * objetos del juego desde el EventManager del World hacia el EnTTWorld.
+     *
+     * @param event Evento de fin de colision entre objetos del juego.
+     */
+    void EnTTTranslationHandler::EnTTOnEndCollision(const EndCollisionEvent &event)
+    {
         m_metaWorld->GetEnTTWorld().GetDispatcher().trigger(event);
     }
 
-    void EnTTTranslationHandler::OnCustomUser(const CustomUserEvent& event) {
+    /**
+     * Metodo que se encarga de reenviar el evento de usuario personalizado
+     * desde el EventManager del World hacia el EnTTWorld.
+     *
+     * @param event Evento de usuario personalizado.
+     */
+    void EnTTTranslationHandler::OnCustomUser(const CustomUserEvent &event)
+    {
         m_metaWorld->GetEnTTWorld().GetDispatcher().trigger(event);
     }
 

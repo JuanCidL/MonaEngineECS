@@ -71,7 +71,7 @@ namespace Mona
 
 		auto viewAudioNoTransform = registry.view<AudioSourceComponent>(entt::exclude<TransformComponent>);
 		viewAudioNoTransform.each([&](auto entity, AudioSourceComponent &audio)
-								  {this->UpdateListener(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)); });
+								  { this->UpdateListener(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)); });
 
 		// Se remueven las fuentes libres que ya terminaron de reproducir su clip de audio
 		RemoveCompletedFreeAudioSources();

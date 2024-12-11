@@ -33,19 +33,6 @@ namespace Mona
 
     void RenderingSystem::Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float deltaTime) noexcept
     {
-        /**
-         * El código original recibe:
-         * - eventManager (parámetro del world)
-         * - camerHandle (parámetro del world)
-         * - ambientLight (parámetro del world)
-         * - staticMeshDataManager
-         * - skeletalMeshDataManager
-         * - transformDataManager
-         * - cameraDataManager
-         * - directionalLightDataManager
-         * - spotLightDataManager
-         * - pointLightDataManager
-         * */
         entt::registry &registry = componentManager.GetRegistry();
         glClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -53,13 +40,13 @@ namespace Mona
         glm::mat4 projectionMatrix;
         glm::vec3 cameraPosition(0.0f);
 
-        Mona::EnTTWorld* pworld = nullptr;
+        Mona::EnTTWorld *pworld = nullptr;
         entt::entity *cameraEntity{nullptr};
 
         registry.view<Mona::EnTTWorld *>().each(
             [&](entt::entity entity)
             {
-                Mona::EnTTWorld& world = registry.get<Mona::EnTTWorld>(entity);
+                Mona::EnTTWorld &world = registry.get<Mona::EnTTWorld>(entity);
                 pworld = &world;
                 cameraEntity = pworld->GetCurrentCamera();
             });
@@ -146,21 +133,19 @@ namespace Mona
             {
                 glBindVertexArray(staticMesh.GetMeshVAOID());
                 staticMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform.GetModelMatrix(), cameraPosition);
-            }
-        );
+            });
 
         componentManager.ForEach<SkeletalMeshComponent, TransformComponent>(
             [&](entt::entity entity, SkeletalMeshComponent &skeletalMesh, TransformComponent &transform)
             {
-                SkinnedMesh& skinnedMesh = *skeletalMesh.m_skinnedMeshPtr;
+                SkinnedMesh &skinnedMesh = *skeletalMesh.m_skinnedMeshPtr;
                 glBindVertexArray(skinnedMesh.GetVertexArrayID());
-                
+
                 auto &animController = skeletalMesh.GetAnimationController();
                 skeletalMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform.GetModelMatrix(), cameraPosition);
-			    glUniformMatrix4fv(ShaderProgram::BoneTransformShaderLocation, skeletalMesh.GetSkeleton()->JointCount(), GL_FALSE, (GLfloat*) m_currentMatrixPalette.data());
-			    glDrawElements(GL_TRIANGLES, skinnedMesh.GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
-            }
-        );
+                glUniformMatrix4fv(ShaderProgram::BoneTransformShaderLocation, skeletalMesh.GetSkeleton()->JointCount(), GL_FALSE, (GLfloat *)m_currentMatrixPalette.data());
+                glDrawElements(GL_TRIANGLES, skinnedMesh.GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
+            });
     }
 
     void RenderingSystem::ShutDown(EnTTComponentManager &componentManager, EnTTEventManager &eventManager) noexcept
@@ -208,7 +193,6 @@ namespace Mona
             return nullptr;
             break;
         }
-
     }
 
     void RenderingSystem::SetBackgroundColor(float r, float g, float b, float alpha)

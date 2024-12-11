@@ -26,7 +26,7 @@ namespace Mona
 
 	class RenderingSystem : public BaseSystem
 	{
-		
+
 	public:
 		static constexpr int NUM_HALF_MAX_DIRECTIONAL_LIGHTS = 1;
 		static constexpr int NUM_HALF_MAX_POINT_LIGHTS = 3;
@@ -39,6 +39,7 @@ namespace Mona
 
 		std::shared_ptr<Material> CreateMaterial(MaterialType type, bool isForSkinning);
 		void SetBackgroundColor(float r, float g, float b, float alpha = 0.0f);
+
 	private:
 		void OnWindowResizeEvent(const WindowResizeEvent &event);
 

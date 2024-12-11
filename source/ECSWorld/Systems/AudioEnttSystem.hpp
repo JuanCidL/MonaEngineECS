@@ -20,7 +20,6 @@
 #include "../../Audio/AudioMacros.hpp"
 #include "../../Audio/AudioSourceComponentLifetimePolicy.hpp"
 
-
 namespace Mona
 {
 	/*
@@ -29,23 +28,30 @@ namespace Mona
 	class EnttAudioSystem : public BaseSystem
 	{
 	public:
-		/*
-		 * Funci�n llamada por el motor que inicializa el sistema de audio, el cual es capaz de reproducir channels audios simultaneamente.
+		/**
+		 * Funci�n llamada por el motor que inicializa el sistema de audio el cual es capaz de reproducir channels audios simultaneamente.
+		 *
+		 * @param componentManager El administrador de componentes del motor.
+		 * @param eventManager El administrador de eventos del motor.
 		 */
 		void StartUp(EnTTComponentManager &componentManager, EnTTEventManager &eventManager) noexcept;
 
-		/*
-		 * Libera todos los recuros mantenidos por el sistema de audio, esta funci�n es llamada durante el proceso de cierre del motor.
+		/**
+		 * Funci�n libera todos los recuros mantenidos por el sistema de audio, esta funci�n es llamada durante el proceso de cierre del motor.
+		 * @param componentManager El administrador de componentes del motor.
+		 * @param eventManager El administrador de eventos del motor.
 		 */
 		void ShutDown(EnTTComponentManager &componentManager, EnTTEventManager &eventManager) noexcept;
 
-		/*
+		/**
 		 * Funci�n llamada cada iteraci�n del mainloop del motor
+		 * @param componentManager El administrador de componentes del motor.
+		 * @param eventManager El administrador de eventos del motor.
 		 */
 		void Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float timeStep) noexcept;
 
 		/*
-		 * Retorna el volumen global o maestro del sistema de audio
+		 * M´wtodo que retorna el volumen global o maestro del sistema de audio
 		 */
 		float GetMasterVolume() const noexcept;
 
@@ -88,7 +94,6 @@ namespace Mona
 		void ClearSources() noexcept;
 
 	private:
-		// Esta puede que tenga que meter ecs//////////////////////////////////////////////////////
 		void UpdateListener(const glm::vec3 &position, const glm::vec3 &frontVector, const glm::vec3 &upVector);
 		void RemoveCompletedFreeAudioSources();
 		void UpdateFreeAudioSourcesTimers(float timeStep);
@@ -107,10 +112,7 @@ namespace Mona
 		void SortAudioSourceComponentsByPriority(entt::registry &registry,
 												 uint32_t (&outCount)[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)]);
 
-		//////////////////////////////////////////////////////
-
 		void FreeOpenALSource(uint32_t index);
-		// Esta puede que tenga que meter ecs
 		struct OpenALSourceArrayEntry
 		{
 			ALuint m_sourceID;
@@ -121,7 +123,6 @@ namespace Mona
 
 		ALCcontext *m_audioContext;
 		ALCdevice *m_audioDevice;
-		// Esta puede que tenga que meter ecs
 		std::vector<OpenALSourceArrayEntry> m_openALSources;
 		uint32_t m_firstFreeOpenALSourceIndex;
 		uint32_t m_channels;
