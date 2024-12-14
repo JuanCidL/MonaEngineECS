@@ -2,9 +2,10 @@
 #ifndef STATS_ENTT_SYSTEM_HPP
 #define STATS_ENTT_SYSTEM_HPP
 #include "BaseEnTTSystem.hpp"
+#include "../Components/StatComponents.hpp"
 
 namespace Mona {
-
+    
     class StatsEnTTSystem : public BaseEnTTSystem {
     public:
         StatsEnTTSystem() = default;

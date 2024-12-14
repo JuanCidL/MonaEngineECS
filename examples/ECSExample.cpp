@@ -14,7 +14,9 @@ public:
 
 		componentManager.DestroyEntity(e1);
 		componentManager.DestroyEntity(e2);
-		componentManager.DestroyEntity(e3);
+		// componentManager.DestroyEntity(e3);
+		Mona::Comp& uw = componentManager.AddComponent<Mona::Comp>(e3, 10.0f);
+		Mona::Comp2& uw2 = componentManager.AddComponent<Mona::Comp2>(e3, 10.0f);
 
 	}
 

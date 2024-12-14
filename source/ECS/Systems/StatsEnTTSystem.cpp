@@ -12,9 +12,16 @@ namespace Mona {
             time = 0.0f;
             std::cout << "StatsEnTTSystem: Update" << std::endl;
         }
+
+        auto vw = componentManager.ComponentQuery<Comp>(entt::exclude_t<Comp2>());
+        for (auto entity : vw) {
+            auto& comp = vw.get<Comp>(entity);
+            std::cout << "Comp: " << comp.x << std::endl;
+            comp.x -= 0.01f;
+        }
     }
 
     void StatsEnTTSystem::ShutDown(EnTTComponentManager& componentManager, EnTTEventManager& eventManager) noexcept {
     }
 
-} // namespace Mona
+}
