@@ -84,7 +84,11 @@ set(MONA_HEADERS
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
 				DebugDrawing/IKNavigationDebugDraw.hpp
-				Utilities/BasicCameraControllers.hpp)
+				Utilities/BasicCameraControllers.hpp
+				ECS/EnTTComponentManager.hpp
+				ECS/EnTTEventManager.hpp
+				ECS/EnTTSystemManager.hpp
+				ECS/Systems/BaseEnTTSystem.hpp)
 set(MONA_SOURCES
 				CharacterNavigation/AnimationValidator.cpp
 				CharacterNavigation/IKRigBase.cpp

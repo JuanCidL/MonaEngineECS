@@ -6,6 +6,9 @@ public:
 	MinimalSetup() = default;
 	~MinimalSetup() = default;
 	virtual void UserStartUp(Mona::World &world) noexcept override{
+		Mona::EnTTComponentManager componentManager;
+		Mona::EnTTEventManager eventManager;
+		Mona::EnTTSystemManager systemManager;
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {
