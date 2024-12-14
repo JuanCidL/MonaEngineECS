@@ -38,6 +38,12 @@ namespace Mona
             return m_registry.view<ComponentTypes...>(exclude);
         }
 
+        template<typename... ComponentTypes, typename Func>
+        void ForEach(Func&& func)
+        {
+            m_registry.view<ComponentTypes...>().each(std::forward<Func>(func));
+        }
+
     private:
         entt::registry m_registry;
     };   

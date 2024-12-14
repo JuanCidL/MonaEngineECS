@@ -13,12 +13,16 @@ namespace Mona {
             std::cout << "StatsEnTTSystem: Update" << std::endl;
         }
 
-        auto vw = componentManager.ComponentQuery<Comp>(entt::exclude_t<Comp2>());
-        for (auto entity : vw) {
-            auto& comp = vw.get<Comp>(entity);
-            std::cout << "Comp: " << comp.x << std::endl;
-            comp.x -= 0.01f;
-        }
+        auto vw = componentManager.ComponentQuery<Comp, Comp2>();
+
+        componentManager.ForEach<Comp, Comp2>(
+            [&](entt::entity entity, Comp& cmp, Comp2& cmp2) {
+                cmp.x += 0.001;
+                cmp2.x += 0.001;
+                std::cout << "Comp: " << cmp.x << std::endl;
+                std::cout << "Comp2: " << cmp2.x << std::endl;
+            }
+        );
     }
 
     void StatsEnTTSystem::ShutDown(EnTTComponentManager& componentManager, EnTTEventManager& eventManager) noexcept {
