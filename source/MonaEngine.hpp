@@ -16,5 +16,6 @@
 #include "Animation/SkeletonManager.hpp"
 #include "Animation/AnimationClipManager.hpp"
 #include <memory>
+#include <entt/entt.hpp>
 
 #endif
