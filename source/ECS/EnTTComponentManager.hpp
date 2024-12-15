@@ -32,6 +32,12 @@ namespace Mona
             return m_registry.emplace<ComponentType>(entity, std::forward<Args>(args)...);
         }
 
+        template<typename ComponentType>
+        void RemoveComponent(entt::entity entity)
+        {
+            m_registry.remove<ComponentType>(entity);
+        }
+
         template<typename... ComponentTypes, typename... ExcludeTypes>
         auto ComponentQuery(entt::exclude_t<ExcludeTypes...> exclude = entt::exclude_t<>()) noexcept
         {
