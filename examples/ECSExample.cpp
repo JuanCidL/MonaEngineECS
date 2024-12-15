@@ -13,11 +13,12 @@ public:
 		auto e3 = componentManager.CreateEntity();
 
 		componentManager.DestroyEntity(e1);
-		componentManager.DestroyEntity(e2);
+		// componentManager.DestroyEntity(e2);
 		// componentManager.DestroyEntity(e3);
 		Mona::Comp& uw = componentManager.AddComponent<Mona::Comp>(e3, 10.0f);
 		Mona::Comp2& uw2 = componentManager.AddComponent<Mona::Comp2>(e3, 10.0f);
 
+		Mona::Comp& uw4 = componentManager.AddComponent<Mona::Comp>(e2, 10.0f);
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {
@@ -25,6 +26,11 @@ public:
 	}
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		statsSystem.Update(componentManager, eventManager, timeStep);
+		// auto count = componentManager.GetComponentCount<Mona::Comp>();
+		// auto count2 = componentManager.GetComponentCount<Mona::Comp2>();
+		// std::cout << "Comp count: " << count << std::endl;
+		// std::cout << "Comp2 count: " << count2 << std::endl;
+		
 	}
 
 private:

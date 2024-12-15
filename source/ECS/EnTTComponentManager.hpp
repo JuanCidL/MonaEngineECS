@@ -2,6 +2,8 @@
 #ifndef ENTT_COMPONENT_MANAGER_HPP
 #define ENTT_COMPONENT_MANAGER_HPP
 #include <entt/entt.hpp>
+#include <unordered_map>
+#include <typeindex>
 
 namespace Mona
 {
@@ -29,13 +31,23 @@ namespace Mona
         template<typename ComponentType, typename... Args>
         ComponentType& AddComponent(entt::entity entity, Args&&... args)
         {
-            return m_registry.emplace<ComponentType>(entity, std::forward<Args>(args)...);
+            auto& cmp = m_registry.emplace<ComponentType>(entity, std::forward<Args>(args)...);
+            if (m_componentCount.find(typeid(ComponentType)) == m_componentCount.end())
+            {
+                m_componentCount[typeid(ComponentType)] = 1;
+            }
+            else
+            {
+                m_componentCount[typeid(ComponentType)]++;
+            }
+            return cmp;
         }
 
         template<typename ComponentType>
         void RemoveComponent(entt::entity entity)
         {
             m_registry.remove<ComponentType>(entity);
+            m_componentCount[typeid(ComponentType)]--;
         }
 
         template<typename... ComponentTypes, typename... ExcludeTypes>
@@ -50,8 +62,15 @@ namespace Mona
             m_registry.view<ComponentTypes...>().each(std::forward<Func>(func));
         }
 
+        template<typename ComponentType>
+        uint32_t GetComponentCount()
+        {
+            return m_componentCount[typeid(ComponentType)];
+        }
+
     private:
         entt::registry m_registry;
+        std::unordered_map<std::type_index, uint32_t> m_componentCount;
     };   
 }
 
