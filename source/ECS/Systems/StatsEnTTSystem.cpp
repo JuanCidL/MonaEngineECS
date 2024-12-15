@@ -1,31 +1,51 @@
 #include "./StatsEnTTSystem.hpp"
 #include <iostream>
 
-namespace Mona {
+namespace Mona
+{
 
-    void StatsEnTTSystem::StartUp(EnTTComponentManager& componentManager, EnTTEventManager& eventManager) noexcept {
+    void StatsEnTTSystem::StartUp(EnTTComponentManager &componentManager, EnTTEventManager &eventManager) noexcept
+    {
     }
 
-    void StatsEnTTSystem::Update(EnTTComponentManager& componentManager, EnTTEventManager& eventManager, float deltaTime) noexcept {
+    void StatsEnTTSystem::Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float deltaTime) noexcept
+    {
         time += deltaTime;
-        if (time >= 1.0f) {
+        if (time >= 1.0f)
+        {
             time = 0.0f;
             std::cout << "StatsEnTTSystem: Update" << std::endl;
         }
 
-        auto vw = componentManager.ComponentQuery<Comp, Comp2>();
+        auto vw = componentManager.ComponentQuery<Stats>();
 
-        componentManager.ForEach<Comp, Comp2>(
-            [&](entt::entity entity, Comp& cmp, Comp2& cmp2) {
-                cmp.x += 0.001;
-                cmp2.x += 0.001;
-                std::cout << "Comp: " << cmp.x << std::endl;
-                std::cout << "Comp2: " << cmp2.x << std::endl;
-            }
-        );
+        componentManager.ForEach<Stats>(
+            [&](entt::entity entity, Stats &stats)
+            {
+                stats.health -= 0.1f;
+                if (stats.health > 30.0f && stats.health <= 60.0f)
+                {
+                    stats.state = StatsColors::green;
+                    std::cout << "Stat State: green" << std::endl;
+                }
+                else if (stats.health > 0.0f && stats.health <= 30.0f)
+                {
+                    stats.state = StatsColors::blue;
+                    std::cout << "Stat State: blue" << std::endl;
+                }
+                else if (stats.health <= 0.0f)
+                {
+                    componentManager.DestroyEntity(entity);
+                }
+                else
+                {
+                    stats.state = StatsColors::red;
+                    std::cout << "Stat State: red" << std::endl;
+                }
+            });
     }
-
-    void StatsEnTTSystem::ShutDown(EnTTComponentManager& componentManager, EnTTEventManager& eventManager) noexcept {
+    void StatsEnTTSystem::ShutDown(EnTTComponentManager &componentManager, EnTTEventManager &eventManager) noexcept
+    {
     }
 
 }
