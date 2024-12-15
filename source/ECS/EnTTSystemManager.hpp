@@ -40,7 +40,7 @@ namespace Mona
         SystemType& GetSystem()
         {
             assert(m_systems.find(typeid(SystemType)) != m_systems.end() && "System does not exist");
-            return *static_cast<SystemType*>(m_systems[typeid(SystemType)]);
+            return *static_cast<SystemType*>(m_systems[typeid(SystemType)].get());
         }
 
         void StartUpSystems(EnTTComponentManager& componentManager, EnTTEventManager& eventManager)
