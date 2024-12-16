@@ -88,8 +88,11 @@ set(MONA_HEADERS
 				ECS/EnTTComponentManager.hpp
 				ECS/EnTTEventManager.hpp
 				ECS/EnTTSystemManager.hpp
+				ECS/Components/StatComponents.hpp
+				ECS/Components/CollisionComponents.hpp
 				ECS/Systems/BaseEnTTSystem.hpp
-				ECS/Systems/StatsEnTTSystem.hpp)
+				ECS/Systems/StatsEnTTSystem.hpp
+				ECS/Systems/CollisionEnTTSystem.hpp)
 set(MONA_SOURCES
 				CharacterNavigation/AnimationValidator.cpp
 				CharacterNavigation/IKRigBase.cpp
@@ -130,7 +133,8 @@ set(MONA_SOURCES
 				DebugDrawing/BulletDebugDraw.cpp
 				DebugDrawing/IKNavigationDebugDraw.cpp
 				DebugDrawing/DebugDrawingSystem.cpp
-				ECS/Systems/StatsEnTTSystem.cpp)
+				ECS/Systems/StatsEnTTSystem.cpp
+				ECS/Systems/CollisionEnTTSystem.cpp)
 file(GLOB_RECURSE Shaders  "${CMAKE_SOURCE_DIR}/Assets/Shaders/*")
 source_group("Shaders" FILES ${Shaders})
 
