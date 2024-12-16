@@ -4,10 +4,6 @@
 namespace MonaECS
 {
 
-    void StatsSystem::StartUp(ComponentManager &componentManager, EventManager &eventManager) noexcept
-    {
-    }
-
     void StatsSystem::Update(ComponentManager &componentManager, EventManager &eventManager, float deltaTime) noexcept
     {
         time += deltaTime;
@@ -44,8 +40,4 @@ namespace MonaECS
                 }
             });
     }
-    void StatsSystem::ShutDown(ComponentManager &componentManager, EventManager &eventManager) noexcept
-    {
-    }
-
 }

@@ -10,9 +10,7 @@ namespace MonaECS {
     public:
         StatsSystem() = default;
         ~StatsSystem() = default;
-        void StartUp(ComponentManager& componentManager, EventManager& eventManager) noexcept;
         void Update(ComponentManager& componentManager, EventManager& eventManager, float deltaTime) noexcept;
-        void ShutDown(ComponentManager& componentManager, EventManager& eventManager) noexcept;
 
     private:
         float time = 0.0f;
