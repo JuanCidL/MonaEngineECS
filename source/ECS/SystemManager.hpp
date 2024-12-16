@@ -1,22 +1,22 @@
 #pragma once
-#ifndef ENTT_SYSTEM_MANAGER_HPP
-#define ENTT_SYSTEM_MANAGER_HPP
+#ifndef ECS_SYSTEM_MANAGER_HPP
+#define ECS_SYSTEM_MANAGER_HPP
 #include <unordered_map>
 #include <typeindex>
-#include "./Systems/BaseEnTTSystem.hpp"
+#include "./Systems/BaseSystem.hpp"
 
-namespace Mona
+namespace MonaECS
 {
-    class EnTTSystemManager
+    class SystemManager
     {
     public:
-        EnTTSystemManager() = default;
-        ~EnTTSystemManager() = default;
+        SystemManager() = default;
+        ~SystemManager() = default;
 
         template<typename SystemType, typename... Args>
         SystemType RegisterSystem(Args&&... args)
         {
-            static_assert(std::is_base_of<BaseEnTTSystem, SystemType>::value, "SystemType must derive from BaseEnTTSystem");
+            static_assert(std::is_base_of<BaseSystem, SystemType>::value, "SystemType must derive from BaseSystem");
             std::type_index typeIndex = typeid(SystemType);
             if (m_systems.find(typeIndex) != m_systems.end())
             {
@@ -43,7 +43,7 @@ namespace Mona
             return *static_cast<SystemType*>(m_systems[typeid(SystemType)].get());
         }
 
-        void StartUpSystems(EnTTComponentManager& componentManager, EnTTEventManager& eventManager)
+        void StartUpSystems(ComponentManager& componentManager, EventManager& eventManager)
         {
             for (auto& system : m_systems)
             {
@@ -51,7 +51,7 @@ namespace Mona
             }
         }
 
-        void UpdateSystems(EnTTComponentManager& componentManager, EnTTEventManager& eventManager, float deltaTime)
+        void UpdateSystems(ComponentManager& componentManager, EventManager& eventManager, float deltaTime)
         {
             for (auto& system : m_systems)
             {
@@ -59,7 +59,7 @@ namespace Mona
             }
         }
 
-        void ShutDownSystems(EnTTComponentManager& componentManager, EnTTEventManager& eventManager)
+        void ShutDownSystems(ComponentManager& componentManager, EventManager& eventManager)
         {
             for (auto& system : m_systems)
             {
@@ -68,7 +68,7 @@ namespace Mona
         }
     
     private:
-        std::unordered_map<std::type_index, std::unique_ptr<BaseEnTTSystem>> m_systems;
+        std::unordered_map<std::type_index, std::unique_ptr<BaseSystem>> m_systems;
     };   
 }
 

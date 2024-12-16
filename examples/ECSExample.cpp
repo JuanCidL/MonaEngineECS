@@ -1,6 +1,6 @@
 #include "MonaEngine.hpp"
 #include "ECS/ECS.hpp"
-#include "ECS/Systems/StatsEnTTSystem.hpp"
+#include "ECS/Systems/StatsSystem.hpp"
 
 struct TestEvent
 {
@@ -36,12 +36,12 @@ public:
 		componentManager.DestroyEntity(e1);
 		componentManager.DestroyEntity(e2);
 
-		Mona::Stats &st = componentManager.AddComponent<Mona::Stats>(e3);
+		MonaECS::Stats &st = componentManager.AddComponent<MonaECS::Stats>(e3);
 
 
 		eventManager.Subscribe<TestEvent, &func>();
 		eventManager.Subscribe<TestEvent, ExampleClassUsingEvent, &ExampleClassUsingEvent::OnEvent>(exampleClass);
-		systemManager.RegisterSystem<Mona::StatsEnTTSystem>();
+		systemManager.RegisterSystem<MonaECS::StatsSystem>();
 		systemManager.StartUpSystems(componentManager, eventManager);
 	}
 
@@ -55,18 +55,17 @@ public:
 		time += timeStep;
 		if (time > 1.0f)
 		{
-			TestEvent event;
-			event.value = 10;
+			TestEvent event{ 10 };
 			eventManager.Publish(event);
 			time = 0.0f;
 		}
 	}
 
 private:
-	Mona::EnTTComponentManager componentManager;
-	Mona::EnTTEventManager eventManager;
-	Mona::EnTTSystemManager systemManager;
-	Mona::StatsEnTTSystem statsSystem;
+	MonaECS::ComponentManager componentManager;
+	MonaECS::EventManager eventManager;
+	MonaECS::SystemManager systemManager;
+	MonaECS::StatsSystem statsSystem;
 	ExampleClassUsingEvent exampleClass;
 	float time = 0.0f;
 };

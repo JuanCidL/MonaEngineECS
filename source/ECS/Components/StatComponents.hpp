@@ -3,7 +3,7 @@
 #define STAT_COMPONENTS_HPP
 #include <glm/glm.hpp>
 
-namespace Mona
+namespace MonaECS
 {
     enum class StatsColors
     {

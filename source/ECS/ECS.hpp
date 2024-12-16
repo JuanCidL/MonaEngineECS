@@ -1,11 +1,11 @@
 #pragma once
-#ifndef ECS_HPP
-#define ECS_HPP
+#ifndef ECS_MONA_HPP
+#define ECS_MONA_HPP
 
-#include "./EnTTComponentManager.hpp"
-#include "./EnTTEventManager.hpp"
-#include "./EnTTSystemManager.hpp"
-#include "./Systems/BaseEnTTSystem.hpp"
+#include "./ComponentManager.hpp"
+#include "./EventManager.hpp"
+#include "./SystemManager.hpp"
+#include "./Systems/BaseSystem.hpp"
 #include <entt/entt.hpp>
 
 #endif

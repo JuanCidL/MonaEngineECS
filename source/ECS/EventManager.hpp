@@ -1,16 +1,16 @@
 #pragma once
-#ifndef ENTT_EVENT_MANAGER_HPP
-#define ENTT_EVENT_MANAGER_HPP
+#ifndef ECS_EVENT_MANAGER_HPP
+#define ECS_EVENT_MANAGER_HPP
 #include <entt/entt.hpp>
 #include <functional>
 
-namespace Mona
+namespace MonaECS
 {
-    class EnTTEventManager
+    class EventManager
     {
     public:
-        EnTTEventManager() = default;
-        ~EnTTEventManager() = default;
+        EventManager() = default;
+        ~EventManager() = default;
 
         // Event subscription using a function pointer
         template<typename EventType, void(*func)(const EventType &)>

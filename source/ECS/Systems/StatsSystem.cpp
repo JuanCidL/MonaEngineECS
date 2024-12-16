@@ -1,20 +1,20 @@
-#include "./StatsEnTTSystem.hpp"
+#include "./StatsSystem.hpp"
 #include <iostream>
 
-namespace Mona
+namespace MonaECS
 {
 
-    void StatsEnTTSystem::StartUp(EnTTComponentManager &componentManager, EnTTEventManager &eventManager) noexcept
+    void StatsSystem::StartUp(ComponentManager &componentManager, EventManager &eventManager) noexcept
     {
     }
 
-    void StatsEnTTSystem::Update(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float deltaTime) noexcept
+    void StatsSystem::Update(ComponentManager &componentManager, EventManager &eventManager, float deltaTime) noexcept
     {
         time += deltaTime;
         if (time >= 1.0f)
         {
             time = 0.0f;
-            std::cout << "StatsEnTTSystem: Update" << std::endl;
+            std::cout << "StatsSystem: Update" << std::endl;
         }
 
         auto vw = componentManager.ComponentQuery<Stats>();
@@ -44,7 +44,7 @@ namespace Mona
                 }
             });
     }
-    void StatsEnTTSystem::ShutDown(EnTTComponentManager &componentManager, EnTTEventManager &eventManager) noexcept
+    void StatsSystem::ShutDown(ComponentManager &componentManager, EventManager &eventManager) noexcept
     {
     }
 

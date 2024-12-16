@@ -1,8 +1,8 @@
-#include "./CollisionEnTTSystem.hpp"
+#include "./CollisionSystem.hpp"
 
-namespace Mona
+namespace MonaECS
 {
-    void CollisionEnTTSystem::StartUp(EnTTComponentManager& componentManager, EnTTEventManager& eventManager) noexcept
+    void CollisionSystem::StartUp(ComponentManager& componentManager, EventManager& eventManager) noexcept
     {
         broadphase = new btDbvtBroadphase();
         collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -12,12 +12,12 @@ namespace Mona
         dynamicsWorld->setGravity(btVector3(0, -10, 0));
     }
 
-    void CollisionEnTTSystem::Update(EnTTComponentManager& componentManager, EnTTEventManager& eventManager, float deltaTime) noexcept
+    void CollisionSystem::Update(ComponentManager& componentManager, EventManager& eventManager, float deltaTime) noexcept
     {
         dynamicsWorld->stepSimulation(deltaTime, 10);
     }
 
-    void CollisionEnTTSystem::ShutDown(EnTTComponentManager& componentManager, EnTTEventManager& eventManager) noexcept
+    void CollisionSystem::ShutDown(ComponentManager& componentManager, EventManager& eventManager) noexcept
     {
         delete dynamicsWorld;
         delete solver;

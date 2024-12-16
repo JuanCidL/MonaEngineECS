@@ -1,17 +1,17 @@
 #pragma once
-#ifndef ENTT_COMPONENT_MANAGER_HPP
-#define ENTT_COMPONENT_MANAGER_HPP
+#ifndef ECS_COMPONENT_MANAGER_HPP
+#define ECS_COMPONENT_MANAGER_HPP
 #include <entt/entt.hpp>
 #include <unordered_map>
 #include <typeindex>
 
-namespace Mona
+namespace MonaECS
 {
-    class EnTTComponentManager
+    class ComponentManager
     {
     public:
-        EnTTComponentManager() = default;
-        ~EnTTComponentManager() = default;
+        ComponentManager() = default;
+        ~ComponentManager() = default;
 
         entt::registry& GetRegistry() noexcept
         {

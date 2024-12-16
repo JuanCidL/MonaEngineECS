@@ -5,25 +5,24 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-namespace Mona
+namespace MonaECS
 {
-    struct CollisionShapeEnTTComponent
+    struct CollisionShapeComponent
     {
         btCollisionShape* shape;
     };
 
-    struct RigidBodyEnTTComponent
+    struct RigidBodyComponent
     {
         btRigidBody* rigidBody;
     };
 
-    struct TransformEnTTComponent
-    {
-        glm::vec3 position;
-        glm::fquat rotation;
-        glm::vec3 scale;
-    };
-
+    // struct TransformComponent
+    // {
+    //     glm::vec3 position;
+    //     glm::fquat rotation;
+    //     glm::vec3 scale;
+    // };
 
 }
 
