@@ -7,14 +7,17 @@
 
 namespace Mona
 {
+    /**
+     * Class that manages the System part of the ECS
+     */
     class EnTTSystemManager
     {
     public:
         EnTTSystemManager() = default;
         ~EnTTSystemManager() = default;
 
-        template<typename SystemType, typename... Args>
-        SystemType RegisterSystem(Args&&... args)
+        template <typename SystemType, typename... Args>
+        SystemType RegisterSystem(Args &&...args)
         {
             static_assert(std::is_base_of<BaseEnTTSystem, SystemType>::value, "SystemType must derive from BaseEnTTSystem");
             std::type_index typeIndex = typeid(SystemType);
@@ -28,7 +31,7 @@ namespace Mona
             return systemRef;
         }
 
-        template<typename SystemType>
+        template <typename SystemType>
         void UnregisterSystem()
         {
             assert(m_systems.find(typeid(SystemType)) != m_systems.end() && "System does not exist");
@@ -36,40 +39,40 @@ namespace Mona
             m_systems.erase(typeid(SystemType));
         }
 
-        template<typename SystemType>
-        SystemType& GetSystem()
+        template <typename SystemType>
+        SystemType &GetSystem()
         {
             assert(m_systems.find(typeid(SystemType)) != m_systems.end() && "System does not exist");
-            return *static_cast<SystemType*>(m_systems[typeid(SystemType)]);
+            return *static_cast<SystemType *>(m_systems[typeid(SystemType)]);
         }
 
-        void StartUpSystems(EnTTComponentManager& componentManager, EnTTEventManager& eventManager)
+        void StartUpSystems(EnTTComponentManager &componentManager, EnTTEventManager &eventManager)
         {
-            for (auto& system : m_systems)
+            for (auto &system : m_systems)
             {
                 system.second->StartUp(componentManager, eventManager);
             }
         }
 
-        void UpdateSystems(EnTTComponentManager& componentManager, EnTTEventManager& eventManager, float deltaTime)
+        void UpdateSystems(EnTTComponentManager &componentManager, EnTTEventManager &eventManager, float deltaTime)
         {
-            for (auto& system : m_systems)
+            for (auto &system : m_systems)
             {
                 system.second->Update(componentManager, eventManager, deltaTime);
             }
         }
 
-        void ShutDownSystems(EnTTComponentManager& componentManager, EnTTEventManager& eventManager)
+        void ShutDownSystems(EnTTComponentManager &componentManager, EnTTEventManager &eventManager)
         {
-            for (auto& system : m_systems)
+            for (auto &system : m_systems)
             {
                 system.second->ShutDown(componentManager, eventManager);
             }
         }
-    
+
     private:
         std::unordered_map<std::type_index, std::unique_ptr<BaseEnTTSystem>> m_systems;
-    };   
+    };
 }
 
 #endif
