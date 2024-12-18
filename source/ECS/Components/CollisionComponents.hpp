@@ -1,6 +1,7 @@
 #pragma once
 #ifndef COLLISION_COMPONENTS_HPP
 #define COLLISION_COMPONENTS_HPP
+#include "../../MonaEngine.hpp"
 #include <btBulletDynamicsCommon.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -9,20 +10,19 @@ namespace MonaECS
 {
     struct CollisionShapeComponent
     {
-        btCollisionShape* shape;
+        btCollisionShape *shape;
     };
 
     struct RigidBodyComponent
     {
-        btRigidBody* rigidBody;
+        btRigidBody *rigidBody;
     };
 
-    // struct TransformComponent
-    // {
-    //     glm::vec3 position;
-    //     glm::fquat rotation;
-    //     glm::vec3 scale;
-    // };
+    struct TransformComponent
+    {
+        Mona::TransformHandle *tHandle;
+        operator const Mona::TransformHandle *() { return tHandle; }
+    };
 
 }
 

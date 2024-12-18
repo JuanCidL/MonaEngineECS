@@ -38,7 +38,6 @@ public:
 
 		MonaECS::Stats &st = componentManager.AddComponent<MonaECS::Stats>(e3);
 
-
 		eventManager.Subscribe<TestEvent, &func>();
 		eventManager.Subscribe<TestEvent, ExampleClassUsingEvent, &ExampleClassUsingEvent::OnEvent>(exampleClass);
 		systemManager.RegisterSystem<MonaECS::StatsSystem>();
@@ -55,7 +54,7 @@ public:
 		time += timeStep;
 		if (time > 1.0f)
 		{
-			TestEvent event{ 10 };
+			TestEvent event{10};
 			eventManager.Publish(event);
 			time = 0.0f;
 		}
