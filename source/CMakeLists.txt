@@ -91,6 +91,7 @@ set(MONA_HEADERS
 				ECS/ECS.hpp
 				ECS/Components/StatComponents.hpp
 				ECS/Components/CollisionComponents.hpp
+				ECS/Events/CollisionEvents.hpp
 				ECS/Systems/BaseSystem.hpp
 				ECS/Systems/StatsSystem.hpp
 				ECS/Systems/CollisionSystem.hpp)

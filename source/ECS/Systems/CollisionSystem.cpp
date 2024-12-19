@@ -7,10 +7,12 @@ namespace MonaECS
 
     void CollisionSystem::Update(ComponentManager &componentManager, EventManager &eventManager, float deltaTime) noexcept
     {
-        componentManager.ForEach<TransformComponent, ColliderComponent, BodyComponent>(
-            [&](entt::entity entity, TransformComponent &transform, ColliderComponent &collider, BodyComponent &body) {
-                
-        });
+        UpdatePositions(componentManager, deltaTime);
+        auto collisions = CheckCollisions(componentManager);
+        for (auto &collision : collisions)
+        {
+            eventManager.Publish<CollisionEvent>({collision.entity1, collision.entity2, collision.normal});
+        }
     }
 
     void CollisionSystem::UpdatePositions(ComponentManager &componentManager, float deltaTime) noexcept
@@ -24,19 +26,18 @@ namespace MonaECS
             });
     }
 
-    std::vector<CollisionSystem::CollisionPair> CollisionSystem::CheckCollisions(ComponentManager &componentManager) noexcept
+    std::vector<CollisionEvent> CollisionSystem::CheckCollisions(ComponentManager &componentManager) noexcept
     {
-        std::vector<CollisionPair> collisions;
+        std::vector<CollisionEvent> collisions;
         
-        auto transforms = componentManager.ComponentQuery<TransformComponent>();
-        auto colliders = componentManager.ComponentQuery<ColliderComponent>();
+        auto tc = componentManager.ComponentQuery<TransformComponent, ColliderComponent>();
 
-        for (auto itA = colliders.begin(); itA != colliders.end(); ++itA)
+        for (auto itA = tc.begin(); itA != tc.end(); ++itA)
         {
             entt::entity entityA = *itA;
             ColliderComponent colliderA = componentManager.GetComponent<ColliderComponent>(entityA);
             TransformComponent transformA = componentManager.GetComponent<TransformComponent>(entityA);
-            for (auto itB = std::next(itA); itB != colliders.end(); ++itB)
+            for (auto itB = std::next(itA); itB != tc.end(); ++itB)
             {
                 entt::entity entityB = *itB;
                 ColliderComponent colliderB = componentManager.GetComponent<ColliderComponent>(entityB);
