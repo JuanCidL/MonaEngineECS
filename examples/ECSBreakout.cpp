@@ -32,7 +32,10 @@ public:
     {
         m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 
-        auto ballTransformEntity = componentManager->CreateEntity();
+        auto ballEntity = componentManager->CreateEntity();
+        componentManager->AddComponent<MonaECS::TransformComponent>(ballEntity, &m_ballTransform);
+        componentManager->AddComponent<MonaECS::BodyComponent>(
+            ballEntity, glm::vec3(0.0f, 15.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f);
 
         auto &meshManager = Mona::MeshManager::GetInstance();
         auto ball = world.CreateGameObject<Mona::GameObject>();
@@ -41,26 +44,15 @@ public:
         m_ballTransform->SetRotation(m_transform->GetLocalRotation());
         m_ballTransform->SetTranslation(m_transform->GetLocalTranslation() + glm::vec3(0.0f, 2.0f, 0.0f));
         m_ballTransform->SetScale(glm::vec3(ballRadius));
-        componentManager->AddComponent<MonaECS::TransformComponent>(ballTransformEntity, &m_ballTransform);
 
         auto ballMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
         ballMaterial->SetDiffuseColor(glm::vec3(0.75f, 0.3f, 0.3f));
         world.AddComponent<Mona::StaticMeshComponent>(ball, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Sphere), ballMaterial);
-
-        Mona::SphereShapeInformation sphereInfo(ballRadius);
-        m_ballRigidBody = world.AddComponent<Mona::RigidBodyComponent>(ball, sphereInfo, Mona::RigidBodyType::DynamicBody);
-        m_ballRigidBody->SetRestitution(1.0f);
-        m_ballRigidBody->SetFriction(0.0f);
-        auto callback = [ballTransform = m_ballTransform, ballSound = m_ballBounceSound](Mona::World &world, Mona::RigidBodyHandle &otherRigidBody, bool isSwaped, Mona::CollisionInformation &colInfo) mutable
-        {
-            world.PlayAudioClip3D(ballSound, ballTransform->GetLocalTranslation(), 0.3f);
-        };
-        m_ballRigidBody->SetStartCollisionCallback(callback);
     }
 
     virtual void UserUpdate(Mona::World &world, float timeStep) noexcept
     {
-        m_ballRigidBody->SetLinearVelocity(glm::vec3(0.0f, 15.0f, 0.0f));
+        // m_ballRigidBody->SetLinearVelocity(glm::vec3(0.0f, 15.0f, 0.0f));
     }
 
 private:
