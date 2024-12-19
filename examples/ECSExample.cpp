@@ -95,7 +95,7 @@ public:
 		// componentManager.AddComponent<MonaECS::TransformComponent>(e3);
 
 		// eventManager.Subscribe<TestEvent, &func>();
-		// eventManager.Subscribe<TestEvent, ExampleClassUsingEvent, &ExampleClassUsingEvent::OnEvent>(exampleClass);
+		//eventManager.Subscribe<TestEvent, ExampleClassUsingEvent, &ExampleClassUsingEvent::OnEvent>(exampleClass);
 		world.SetAmbientLight(glm::vec3(0.3f));
 		CreateCamera(world);
 		world.CreateGameObject<Box>(1.0f, &componentManager);

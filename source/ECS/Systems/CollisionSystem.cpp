@@ -66,6 +66,7 @@ namespace MonaECS
             return false;
         if (max1.z < min2.z || min1.z > max2.z)
             return false;
+
         return true;
     }
 
