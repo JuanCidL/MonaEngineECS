@@ -18,7 +18,8 @@ namespace MonaECS
     void CollisionSystem::UpdatePositions(ComponentManager &componentManager, float deltaTime) noexcept
     {
         componentManager.ForEach<TransformComponent, BodyComponent>(
-            [&](entt::entity entity, TransformComponent &transform, BodyComponent &body) {
+            [&](entt::entity entity, TransformComponent &transform, BodyComponent &body)
+            {
                 body.velocity += body.acceleration * deltaTime;
                 glm::vec3 translation = (*transform.tHandle)->GetLocalTranslation();
                 translation += body.velocity * deltaTime;
@@ -29,7 +30,7 @@ namespace MonaECS
     std::vector<CollisionEvent> CollisionSystem::CheckCollisions(ComponentManager &componentManager) noexcept
     {
         std::vector<CollisionEvent> collisions;
-        
+
         auto tc = componentManager.ComponentQuery<TransformComponent, ColliderComponent>();
 
         for (auto itA = tc.begin(); itA != tc.end(); ++itA)
@@ -73,5 +74,5 @@ namespace MonaECS
         glm::vec3 pos1 = (*transform1.tHandle)->GetLocalTranslation();
         glm::vec3 pos2 = (*transform2.tHandle)->GetLocalTranslation();
         return glm::normalize(pos1 - pos2);
-    } 
+    }
 }
