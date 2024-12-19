@@ -44,6 +44,12 @@ namespace MonaECS
         }
 
         template<typename ComponentType>
+        ComponentType& GetComponent(entt::entity entity)
+        {
+            return m_registry.get<ComponentType>(entity);
+        }
+
+        template<typename ComponentType>
         void RemoveComponent(entt::entity entity)
         {
             m_registry.remove<ComponentType>(entity);

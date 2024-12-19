@@ -1,8 +1,9 @@
 #pragma once
 #ifndef ECS_COLLISION_SYSTEM_HPP
 #define ECS_COLLISION_SYSTEM_HPP
-#include <btBulletDynamicsCommon.h>
+#include <vector>
 #include "./BaseSystem.hpp"
+#include "../Components/CollisionComponents.hpp"
 
 namespace MonaECS
 {
@@ -11,18 +12,19 @@ namespace MonaECS
     public:
         CollisionSystem() = default;
         ~CollisionSystem() = default;
-
-        void StartUp(ComponentManager& componentManager, EventManager& eventManager) noexcept;
         void Update(ComponentManager& componentManager, EventManager& eventManager, float deltaTime) noexcept;
-        void ShutDown(ComponentManager& componentManager, EventManager& eventManager) noexcept;
-
     private:
-        btBroadphaseInterface* broadphase;
-        btDefaultCollisionConfiguration* collisionConfiguration;
-        btCollisionDispatcher* collisionDispatcher;
-        btSequentialImpulseConstraintSolver* solver;
-        btDiscreteDynamicsWorld* dynamicsWorld;
+        struct CollisionPair
+        {
+            entt::entity entity1;
+            entt::entity entity2;
+            glm::vec3 normal;
+        };
 
+        void UpdatePositions(ComponentManager& componentManager, float deltaTime) noexcept;
+        std::vector<CollisionPair> CheckCollisions(ComponentManager& componentManager) noexcept;
+        bool CheckAABB(const TransformComponent& transform1, const ColliderComponent& collider1, const TransformComponent& transform2, const ColliderComponent& collider2) noexcept;
+        glm::vec3 GetCollisionNormal(const TransformComponent& transform1, const TransformComponent& transform2) noexcept;
     };
 }
 
