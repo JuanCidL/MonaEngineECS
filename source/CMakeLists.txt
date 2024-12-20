@@ -89,6 +89,9 @@ set(MONA_HEADERS
 				ECS/EventManager.hpp
 				ECS/SystemManager.hpp
 				ECS/ECS.hpp
+				ECS/Components.hpp
+				ECS/Events.hpp
+				ECS/Systems.hpp
 				ECS/Components/StatComponents.hpp
 				ECS/Components/CollisionComponents.hpp
 				ECS/Components/InputComponents.hpp

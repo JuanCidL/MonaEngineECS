@@ -1,15 +1,9 @@
 #include "MonaEngine.hpp"
 #include "Rendering/DiffuseFlatMaterial.hpp"
 #include "ECS/ECS.hpp"
-#include "ECS/Systems/StatsSystem.hpp"
-#include "ECS/Systems/CollisionSystem.hpp"
-#include "ECS/Systems/MovementSystem.hpp"
-#include "ECS/Systems/InputSystem.hpp"
-#include "ECS/Components/StatComponents.hpp"
-#include "ECS/Components/CollisionComponents.hpp"
-#include "ECS/Components/InputComponents.hpp"
-#include "ECS/Events/CollisionEvents.hpp"
-#include <ECS/Events/InputEvents.hpp>
+#include "ECS/Components.hpp"
+#include "ECS/Events.hpp"
+#include "ECS/Systems.hpp"
 
 struct TestEvent
 {
@@ -48,13 +42,13 @@ void CreateCamera(Mona::World &world)
 class Box : public Mona::GameObject
 {
 public:
-	Box(float velocity, MonaECS::ComponentManager *componentManager, glm::vec3 vel=glm::vec3(0.0f, 0.0f, 1.0f)) : m_velocity(vel), componentManager(componentManager) {}
+	Box(float velocity, MonaECS::ECSHandler *ecs, glm::vec3 vel=glm::vec3(0.0f, 0.0f, 1.0f)) : m_velocity(vel), ecs(ecs) {}
 	~Box() = default;
 	virtual void UserStartUp(Mona::World &world) noexcept
 	{
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 
-		auto boxTransformEntity = componentManager->CreateEntity();
+		auto boxTransformEntity = ecs->CreateEntity();
 
 		auto &meshManager = Mona::MeshManager::GetInstance();
 		auto box = world.CreateGameObject<Mona::GameObject>();
@@ -63,14 +57,14 @@ public:
 		m_boxTransform->SetRotation(m_transform->GetLocalRotation());
 		m_boxTransform->SetTranslation(m_transform->GetLocalTranslation() + glm::vec3(0.0f, 2.0f, 0.0f));
 		m_boxTransform->SetScale(glm::vec3(boxSize));
-		componentManager->AddComponent<MonaECS::TransformComponent>(boxTransformEntity, &m_boxTransform);
+		ecs->AddComponent<MonaECS::TransformComponent>(boxTransformEntity, &m_boxTransform);
 
 		// Entity for the box
-		auto e = componentManager->CreateEntity();
+		auto e = ecs->CreateEntity();
 		boxEntity = e;
-		componentManager->AddComponent<MonaECS::TransformComponent>(e, &m_boxTransform);
-		componentManager->AddComponent<MonaECS::ColliderComponent>(e, glm::vec3(boxSize), true);
-		componentManager->AddComponent<MonaECS::BodyComponent>(e, m_velocity, glm::vec3(0.0f), 1.0f);
+		ecs->AddComponent<MonaECS::TransformComponent>(e, &m_boxTransform);
+		ecs->AddComponent<MonaECS::ColliderComponent>(e, glm::vec3(boxSize), true);
+		ecs->AddComponent<MonaECS::BodyComponent>(e, m_velocity, glm::vec3(0.0f), 1.0f);
 
 
 		auto boxMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
@@ -98,7 +92,7 @@ public:
 private:
 	Mona::TransformHandle m_transform;
 	Mona::TransformHandle m_boxTransform;
-	MonaECS::ComponentManager *componentManager;
+	MonaECS::ECSHandler *ecs;
 	entt::entity boxEntity;
 
 	glm::vec3 m_velocity;
@@ -124,27 +118,28 @@ public:
 		//eventManager.Subscribe<TestEvent, ExampleClassUsingEvent, &ExampleClassUsingEvent::OnEvent>(exampleClass);
 		world.SetAmbientLight(glm::vec3(0.3f));
 		CreateCamera(world);
-		componentManager.SetWorld(&world);
+		ecsHandler = new MonaECS::ECSHandler(&world);
+		// componentManager.SetWorld(&world);
 
-		auto box1 = world.CreateGameObject<Box>(1.0f, &componentManager);
-		auto box2 = world.CreateGameObject<Box>(-1.0f, &componentManager, glm::vec3(0.0f, 0.0f, -1.0f));
+		auto box1 = world.CreateGameObject<Box>(1.0f, ecsHandler);
+		auto box2 = world.CreateGameObject<Box>(-1.0f, ecsHandler, glm::vec3(0.0f, 0.0f, -1.0f));
 
 		auto b1e = box1->GetBoxEntity();
-		componentManager.AddComponent<MonaECS::MoveInputComponent>(b1e);
+		ecsHandler->AddComponent<MonaECS::MoveInputComponent>(b1e);
 
 		box2->SetTranslation(glm::vec3(0.0f, 0.0f, 20.0f));
 
 		// now in x axis
-		auto box3 = world.CreateGameObject<Box>(1.0f, &componentManager, glm::vec3(1.0f, 0.0f, 0.0f));
-		auto box4 = world.CreateGameObject<Box>(-1.0f, &componentManager, glm::vec3(-1.0f, 0.0f, 0.0f));
+		auto box3 = world.CreateGameObject<Box>(1.0f, ecsHandler, glm::vec3(1.0f, 0.0f, 0.0f));
+		auto box4 = world.CreateGameObject<Box>(-1.0f, ecsHandler, glm::vec3(-1.0f, 0.0f, 0.0f));
 
 		box3->SetTranslation(glm::vec3(0.0f, 0.0f, 5.0f));
 		box4->SetTranslation(glm::vec3(20.0f, 0.0f, 5.0f));
 
 
 		// now in y axis
-		auto box5 = world.CreateGameObject<Box>(1.0f, &componentManager, glm::vec3(0.0f, 1.0f, 0.0f));
-		auto box6 = world.CreateGameObject<Box>(-1.0f, &componentManager, glm::vec3(0.0f, -1.0f, 0.0f));
+		auto box5 = world.CreateGameObject<Box>(1.0f, ecsHandler, glm::vec3(0.0f, 1.0f, 0.0f));
+		auto box6 = world.CreateGameObject<Box>(-1.0f, ecsHandler, glm::vec3(0.0f, -1.0f, 0.0f));
 
 		box5->SetTranslation(glm::vec3(0.0f, 0.0f, 10.0f));
 		box6->SetTranslation(glm::vec3(0.0f, 20.0f, 10.0f));
@@ -153,23 +148,23 @@ public:
 
 
 
-		systemManager.RegisterSystem<MonaECS::StatsSystem>();
-		systemManager.RegisterSystem<MonaECS::CollisionSystem>();
-		systemManager.RegisterSystem<MonaECS::MovementSystem>();
-		systemManager.RegisterSystem<MonaECS::InputSystem>();
+		ecsHandler->RegisterSystem<MonaECS::StatsSystem>();
+		ecsHandler->RegisterSystem<MonaECS::CollisionSystem>();
+		ecsHandler->RegisterSystem<MonaECS::MovementSystem>();
+		ecsHandler->RegisterSystem<MonaECS::InputSystem>();
 
-		systemManager.StartUpSystems(componentManager, eventManager);
-		eventManager.Subscribe<MonaECS::CollisionEvent, MinimalSetup, &MinimalSetup::OnCollision>(*this);
-		eventManager.Subscribe<MonaECS::MoveInputEvent, &OnInputEvent>();
+		ecsHandler->StartUpSystems();
+		ecsHandler->SubscribeEvent<MonaECS::CollisionEvent, MinimalSetup, &MinimalSetup::OnCollision>(*this);
+		ecsHandler->SubscribeEvent<MonaECS::MoveInputEvent, &OnInputEvent>();
 	}
 
 	virtual void UserShutDown(Mona::World &world) noexcept override
 	{
-		systemManager.ShutDownSystems(componentManager, eventManager);
+		ecsHandler->ShutDownSystems();
 	}
 	virtual void UserUpdate(Mona::World &world, float timeStep) noexcept override
 	{
-		systemManager.UpdateSystems(componentManager, eventManager, timeStep);
+		ecsHandler->UpdateSystems(timeStep);
 	}
 
 	void OnCollision(const MonaECS::CollisionEvent &event)
@@ -179,21 +174,22 @@ public:
 		auto e2 = event.entity2;
 		auto normal = event.normal;
 
-		auto &transform1 = componentManager.GetComponent<MonaECS::TransformComponent>(e1);
-		auto &transform2 = componentManager.GetComponent<MonaECS::TransformComponent>(e2);
+		auto &transform1 = ecsHandler->GetComponent<MonaECS::TransformComponent>(e1);
+		auto &transform2 = ecsHandler->GetComponent<MonaECS::TransformComponent>(e2);
 
 		// Inverse the velocity of the body by the normal
-		auto &body1 = componentManager.GetComponent<MonaECS::BodyComponent>(e1);
-		auto &body2 = componentManager.GetComponent<MonaECS::BodyComponent>(e2);
+		auto &body1 = ecsHandler->GetComponent<MonaECS::BodyComponent>(e1);
+		auto &body2 = ecsHandler->GetComponent<MonaECS::BodyComponent>(e2);
 
 		body1.velocity = glm::reflect(body1.velocity, normal);
 		body2.velocity = glm::reflect(body2.velocity, normal);
 	}
 
 private:
-	MonaECS::ComponentManager componentManager;
-	MonaECS::EventManager eventManager;
-	MonaECS::SystemManager systemManager;
+	// MonaECS::ComponentManager componentManager;
+	// MonaECS::EventManager eventManager;
+	// MonaECS::SystemManager systemManager;
+	MonaECS::ECSHandler* ecsHandler;
 	MonaECS::StatsSystem statsSystem;
 	ExampleClassUsingEvent exampleClass;
 	float time = 0.0f;
