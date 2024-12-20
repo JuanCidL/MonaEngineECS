@@ -105,20 +105,9 @@ public:
 	~MinimalSetup() = default;
 	virtual void UserStartUp(Mona::World &world) noexcept override
 	{
-		// auto e1 = componentManager.CreateEntity();
-		// auto e2 = componentManager.CreateEntity();
-		// auto e3 = componentManager.CreateEntity();
-
-		// componentManager.DestroyEntity(e1);
-
-		// MonaECS::Stats &st = componentManager.AddComponent<MonaECS::Stats>(e3);
-		// componentManager.AddComponent<MonaECS::TransformComponent>(e3);
-
-		// eventManager.Subscribe<TestEvent, &func>();
-		//eventManager.Subscribe<TestEvent, ExampleClassUsingEvent, &ExampleClassUsingEvent::OnEvent>(exampleClass);
 		world.SetAmbientLight(glm::vec3(0.3f));
 		CreateCamera(world);
-		ecsHandler = new MonaECS::ECSHandler(&world);
+		ecsHandler = world.GetECSHandler();
 		// componentManager.SetWorld(&world);
 
 		auto box1 = world.CreateGameObject<Box>(1.0f, ecsHandler);
@@ -136,17 +125,12 @@ public:
 		box3->SetTranslation(glm::vec3(0.0f, 0.0f, 5.0f));
 		box4->SetTranslation(glm::vec3(20.0f, 0.0f, 5.0f));
 
-
 		// now in y axis
 		auto box5 = world.CreateGameObject<Box>(1.0f, ecsHandler, glm::vec3(0.0f, 1.0f, 0.0f));
 		auto box6 = world.CreateGameObject<Box>(-1.0f, ecsHandler, glm::vec3(0.0f, -1.0f, 0.0f));
 
 		box5->SetTranslation(glm::vec3(0.0f, 0.0f, 10.0f));
 		box6->SetTranslation(glm::vec3(0.0f, 20.0f, 10.0f));
-
-
-
-
 
 		ecsHandler->RegisterSystem<MonaECS::StatsSystem>();
 		ecsHandler->RegisterSystem<MonaECS::CollisionSystem>();
@@ -186,9 +170,6 @@ public:
 	}
 
 private:
-	// MonaECS::ComponentManager componentManager;
-	// MonaECS::EventManager eventManager;
-	// MonaECS::SystemManager systemManager;
 	MonaECS::ECSHandler* ecsHandler;
 	MonaECS::StatsSystem statsSystem;
 	ExampleClassUsingEvent exampleClass;
