@@ -23,7 +23,7 @@ namespace MonaECS
     struct TransformComponent
     {
         Mona::TransformHandle *tHandle;
-        Mona::TransformHandle operator *() { return *tHandle; };
+        Mona::TransformHandle operator*() { return *tHandle; };
     };
     
 }

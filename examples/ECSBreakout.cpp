@@ -23,44 +23,87 @@ void CreateBasicCameraWithMusicAndLight(Mona::World &world)
     world.AddComponent<Mona::DirectionalLightComponent>(camera, glm::vec3(1.0f));
 }
 
+class Wall : public Mona::GameObject{
+public:
+    Wall(const glm::vec3 &position, const glm::vec3 &scale, MonaECS::ComponentManager* component, MonaECS::EventManager *event) : m_position(position), m_scale(scale), componentManager(component), eventManager(event){};
+    ~Wall() = default;
+    virtual void UserStartUp(Mona::World &world) noexcept{
+        m_transform = world.AddComponent<Mona::TransformComponent>(*this);  
+        auto wall = world.CreateGameObject<Mona::GameObject>();
+        auto &meshManager = Mona::MeshManager::GetInstance();
+        
+        m_wallTransform = world.AddComponent<Mona::TransformComponent>(wall);
+        m_wallTransform->SetTranslation(m_position);
+        m_wallTransform->SetScale(m_scale);
+
+        auto wallMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+        world.AddComponent<Mona::StaticMeshComponent>(wall, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), wallMaterial);
+
+        auto wallEntity = componentManager->CreateEntity();
+        componentManager->AddComponent<MonaECS::TransformComponent>(wallEntity, &m_wallTransform);
+        componentManager->AddComponent<MonaECS::BodyComponent>(wallEntity, glm::vec3(0.0f), glm::vec3(0.0f), 10.0f);
+        componentManager->AddComponent<MonaECS::ColliderComponent>(wallEntity, m_scale, false);
+    }
+
+    
+private:
+    const glm::vec3& m_position;
+    const glm::vec3& m_scale;
+    Mona::TransformHandle m_transform;
+    Mona::TransformHandle m_wallTransform;
+    MonaECS::ComponentManager * componentManager;
+    MonaECS::EventManager * eventManager;
+
+};
+
 class Ball : public Mona::GameObject
 {
 public:
-    Ball(float velocity, MonaECS::ComponentManager *componentManager) : m_paddleVelocity(velocity), componentManager(componentManager) {}
+    Ball(MonaECS::ComponentManager *componentManager, MonaECS::EventManager *eventManager) :  componentManager(componentManager), eventManager(eventManager) {}
     ~Ball() = default;
     virtual void UserStartUp(Mona::World &world) noexcept
     {
         m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-
-        auto ballTransformEntity = componentManager->CreateEntity();
-
         auto &meshManager = Mona::MeshManager::GetInstance();
         auto ball = world.CreateGameObject<Mona::GameObject>();
         float ballRadius = 0.5f;
+
         m_ballTransform = world.AddComponent<Mona::TransformComponent>(ball);
         m_ballTransform->SetRotation(m_transform->GetLocalRotation());
         m_ballTransform->SetTranslation(m_transform->GetLocalTranslation() + glm::vec3(0.0f, 2.0f, 0.0f));
         m_ballTransform->SetScale(glm::vec3(ballRadius));
-        componentManager->AddComponent<MonaECS::TransformComponent>(ballTransformEntity, &m_ballTransform);
 
         auto ballMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
         ballMaterial->SetDiffuseColor(glm::vec3(0.75f, 0.3f, 0.3f));
         world.AddComponent<Mona::StaticMeshComponent>(ball, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Sphere), ballMaterial);
-
-        Mona::SphereShapeInformation sphereInfo(ballRadius);
-        m_ballRigidBody = world.AddComponent<Mona::RigidBodyComponent>(ball, sphereInfo, Mona::RigidBodyType::DynamicBody);
-        m_ballRigidBody->SetRestitution(1.0f);
-        m_ballRigidBody->SetFriction(0.0f);
-        auto callback = [ballTransform = m_ballTransform, ballSound = m_ballBounceSound](Mona::World &world, Mona::RigidBodyHandle &otherRigidBody, bool isSwaped, Mona::CollisionInformation &colInfo) mutable
-        {
-            world.PlayAudioClip3D(ballSound, ballTransform->GetLocalTranslation(), 0.3f);
-        };
-        m_ballRigidBody->SetStartCollisionCallback(callback);
+    
+        auto ballEntity = componentManager->CreateEntity();
+        componentManager->AddComponent<MonaECS::TransformComponent>(ballEntity, &m_ballTransform);
+        componentManager->AddComponent<MonaECS::BodyComponent>(ballEntity, glm::vec3(5.0f, 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), 10.0f); // Fue necesario ponerle 1 en x e y
+        componentManager->AddComponent<MonaECS::ColliderComponent>(ballEntity, glm::vec3(ballRadius), false);
+        eventManager->Subscribe<MonaECS::CollisionEvent, Ball, &Ball::OnCollision>(*this);
     }
 
     virtual void UserUpdate(Mona::World &world, float timeStep) noexcept
     {
-        m_ballRigidBody->SetLinearVelocity(glm::vec3(0.0f, 15.0f, 0.0f));
+        // m_ballRigidBody->SetLinearVelocity(glm::vec3(0.0f, 15.0f, 0.0f));
+    }
+
+    void OnCollision(const MonaECS::CollisionEvent &event)
+    {
+        auto e1 = event.entity1;
+        auto e2 = event.entity2;
+        auto normal = event.normal;
+
+        auto &transform1 = componentManager->GetComponent<MonaECS::TransformComponent>(e1);
+        auto &transform2 = componentManager->GetComponent<MonaECS::TransformComponent>(e2);
+
+        // Inverse the velocity of the body by the normal
+        auto &body1 = componentManager->GetComponent<MonaECS::BodyComponent>(e1);
+        auto &body2 = componentManager->GetComponent<MonaECS::BodyComponent>(e2);
+
+        body1.velocity = -glm::reflect(body1.velocity, normal);
+        body2.velocity = -glm::reflect(body2.velocity, normal);
     }
 
 private:
@@ -69,8 +112,8 @@ private:
     Mona::RigidBodyHandle m_ballRigidBody;
     std::shared_ptr<Mona::AudioClip> m_ballBounceSound;
     MonaECS::ComponentManager *componentManager;
+    MonaECS::EventManager *eventManager;
 
-    float m_paddleVelocity;
 };
 
 class Breakout : public Mona::Application
@@ -83,10 +126,18 @@ public:
         world.SetGravity(glm::vec3(0.0f, 0.0f, 0.0f));
         world.SetAmbientLight(glm::vec3(0.3f));
         CreateBasicCameraWithMusicAndLight(world);
-        world.CreateGameObject<Ball>(20.0f, &componentManager);
+        world.CreateGameObject<Ball>(&componentManager, &eventManager);
+
+        world.CreateGameObject<Wall>(glm::vec3(0.0f, 26.0f, 0.0f), glm::vec3(18.0f, 1.0f, 1.0f), &componentManager, &eventManager);
+        glm::vec3 sideWallScale(1.0f, 27.0f, 1.0f);
+		float sideWallOffset = 19.0f;
+        world.CreateGameObject<Wall>(glm::vec3(-sideWallOffset, 0.0f, 0.0f), sideWallScale, &componentManager, &eventManager);
+        world.CreateGameObject<Wall>(glm::vec3(sideWallOffset, 0.0f, 0.0f), sideWallScale, &componentManager, &eventManager);
+
         systemManager.RegisterSystem<MonaECS::StatsSystem>();
         systemManager.RegisterSystem<MonaECS::CollisionSystem>();
         systemManager.StartUpSystems(componentManager, eventManager);
+
     }
 
     virtual void UserShutDown(Mona::World &world) noexcept override
