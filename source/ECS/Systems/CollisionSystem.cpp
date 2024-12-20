@@ -1,4 +1,9 @@
+#include "./BaseSystem.hpp"
 #include "./CollisionSystem.hpp"
+#include "../ComponentManager.hpp"
+#include "../EventManager.hpp"
+#include "../Components/CollisionComponents.hpp"
+#include "../Events/CollisionEvents.hpp"
 #include "../../MonaEngine.hpp"
 #include <iostream>
 

@@ -1,12 +1,18 @@
 #pragma once
 #ifndef INPUT_SYSTEM_HPP
 #define INPUT_SYSTEM_HPP
-#include "./BaseSystem.hpp"
-#include "../Components/InputComponents.hpp"
-#include "../../Platform/Input.hpp"
+
+namespace Mona
+{
+    class Input;
+}
 
 namespace MonaECS
 {
+    class BaseSystem;
+    struct MoveInputComponent;
+    struct ActionInputComponent;
+
     class InputSystem : public BaseSystem
     {
     public:

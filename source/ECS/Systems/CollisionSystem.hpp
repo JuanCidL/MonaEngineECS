@@ -2,12 +2,15 @@
 #ifndef ECS_COLLISION_SYSTEM_HPP
 #define ECS_COLLISION_SYSTEM_HPP
 #include <vector>
-#include "./BaseSystem.hpp"
-#include "../Components/CollisionComponents.hpp"
-#include "../Events/CollisionEvents.hpp"
+#include <glm/glm.hpp>
 
 namespace MonaECS
 {
+    class BaseSystem;
+    struct TransformComponent;
+    struct ColliderComponent;
+    struct CollisionEvent;
+
     class CollisionSystem : public BaseSystem
     {
     public:

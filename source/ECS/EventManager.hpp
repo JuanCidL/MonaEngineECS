@@ -2,7 +2,6 @@
 #ifndef ECS_EVENT_MANAGER_HPP
 #define ECS_EVENT_MANAGER_HPP
 #include <entt/entt.hpp>
-#include <functional>
 
 namespace MonaECS
 {

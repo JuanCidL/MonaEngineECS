@@ -1,10 +1,9 @@
 #pragma once
 #ifndef ECS_STATS_SYSTEM_HPP
 #define ECS_STATS_SYSTEM_HPP
-#include "BaseSystem.hpp"
-#include "../Components/StatComponents.hpp"
 
 namespace MonaECS {
+    class BaseSystem;
     
     class StatsSystem : public BaseSystem {
     public:

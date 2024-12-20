@@ -1,5 +1,11 @@
+#include "./BaseSystem.hpp"
 #include "./MovementSystem.hpp"
+#include "../ComponentManager.hpp"
+#include "../EventManager.hpp"
 #include "../Components/InputComponents.hpp"
+#include "../Components/CollisionComponents.hpp"
+#include "../Events./InputEvents.hpp"
+
 
 namespace MonaECS
 {

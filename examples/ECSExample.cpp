@@ -5,6 +5,9 @@
 #include "ECS/Systems/CollisionSystem.hpp"
 #include "ECS/Systems/MovementSystem.hpp"
 #include "ECS/Systems/InputSystem.hpp"
+#include "ECS/Components/StatComponents.hpp"
+#include "ECS/Components/CollisionComponents.hpp"
+#include "ECS/Components/InputComponents.hpp"
 #include "ECS/Events/CollisionEvents.hpp"
 #include <ECS/Events/InputEvents.hpp>
 
