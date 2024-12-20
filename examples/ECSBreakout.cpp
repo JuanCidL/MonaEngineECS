@@ -2,6 +2,7 @@
 #include "ECS/ECS.hpp"
 #include "ECS/Systems/StatsSystem.hpp"
 #include "ECS/Systems/CollisionSystem.hpp"
+#include "ECS/Systems/MovementSystem.hpp"
 #include "ECS/Components/CollisionComponents.hpp"
 #include "Rendering/DiffuseFlatMaterial.hpp"
 
@@ -23,6 +24,60 @@ void CreateBasicCameraWithMusicAndLight(Mona::World &world)
     world.AddComponent<Mona::DirectionalLightComponent>(camera, glm::vec3(1.0f));
 }
 
+class Block : public Mona::GameObject{
+public:
+    Block(const glm::vec3 &position, const glm::vec3 &scale, MonaECS::ComponentManager* component, MonaECS::EventManager *event) : m_position(position), m_scale(scale), componentManager(component), eventManager(event){};
+    ~Block() = default;
+    virtual void UserStartUp(Mona::World &world) noexcept{
+        m_transform = world.AddComponent<Mona::TransformComponent>(*this);  
+        auto wall = world.CreateGameObject<Mona::GameObject>();
+        auto &meshManager = Mona::MeshManager::GetInstance();
+        
+        m_blockTransform = world.AddComponent<Mona::TransformComponent>(wall);
+        m_blockTransform->SetTranslation(m_position);
+        m_blockTransform->SetScale(m_scale);
+
+        auto blockMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+        MonaECS::Stats init;
+        blockMaterial->SetDiffuseColor(init.GetColor());
+        world.AddComponent<Mona::StaticMeshComponent>(wall, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), blockMaterial);
+
+        auto wallEntity = componentManager->CreateEntity();
+        componentManager->AddComponent<MonaECS::TransformComponent>(wallEntity, &m_blockTransform);
+        componentManager->AddComponent<MonaECS::BodyComponent>(wallEntity, glm::vec3(0.0f), glm::vec3(0.0f), 10.0f);
+        componentManager->AddComponent<MonaECS::ColliderComponent>(wallEntity, m_scale, false);
+        componentManager->AddComponent<MonaECS::Stats>(wallEntity, glm::vec3(0.0f));
+        eventManager->Subscribe<MonaECS::CollisionEvent, Block, &Block::OnCollision>(*this);
+    }
+    
+    void OnCollision(const MonaECS::CollisionEvent &event){
+        /* auto e1 = event.entity1;
+        auto e2 = event.entity2;
+
+        try
+        {
+            auto &stat = componentManager->GetComponent<MonaECS::Stats>(e1);
+            stat.NextState();
+        }
+        catch(const std::exception& e)
+        {
+            auto &stat = componentManager->GetComponent<MonaECS::Stats>(e2);
+            stat.NextState();
+        } */
+        
+
+
+    }
+private:
+    const glm::vec3& m_position;
+    const glm::vec3& m_scale;
+    Mona::TransformHandle m_transform;
+    Mona::TransformHandle m_blockTransform;
+    MonaECS::ComponentManager * componentManager;
+    MonaECS::EventManager * eventManager;
+
+};
+
 class Wall : public Mona::GameObject{
 public:
     Wall(const glm::vec3 &position, const glm::vec3 &scale, MonaECS::ComponentManager* component, MonaECS::EventManager *event) : m_position(position), m_scale(scale), componentManager(component), eventManager(event){};
@@ -43,6 +98,7 @@ public:
         componentManager->AddComponent<MonaECS::TransformComponent>(wallEntity, &m_wallTransform);
         componentManager->AddComponent<MonaECS::BodyComponent>(wallEntity, glm::vec3(0.0f), glm::vec3(0.0f), 10.0f);
         componentManager->AddComponent<MonaECS::ColliderComponent>(wallEntity, m_scale, false);
+        
     }
 
     
@@ -79,34 +135,49 @@ public:
     
         auto ballEntity = componentManager->CreateEntity();
         componentManager->AddComponent<MonaECS::TransformComponent>(ballEntity, &m_ballTransform);
-        componentManager->AddComponent<MonaECS::BodyComponent>(ballEntity, glm::vec3(5.0f, 15.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), 10.0f); // Fue necesario ponerle 1 en x e y
+        componentManager->AddComponent<MonaECS::BodyComponent>(ballEntity, glm::vec3(15.0f, 10.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), 10.0f); // Fue necesario ponerle 1 en x e y
         componentManager->AddComponent<MonaECS::ColliderComponent>(ballEntity, glm::vec3(ballRadius), false);
         eventManager->Subscribe<MonaECS::CollisionEvent, Ball, &Ball::OnCollision>(*this);
     }
-
-    virtual void UserUpdate(Mona::World &world, float timeStep) noexcept
-    {
-        // m_ballRigidBody->SetLinearVelocity(glm::vec3(0.0f, 15.0f, 0.0f));
-    }
-
     void OnCollision(const MonaECS::CollisionEvent &event)
     {
         auto e1 = event.entity1;
         auto e2 = event.entity2;
-        auto normal = event.normal;
 
         auto &transform1 = componentManager->GetComponent<MonaECS::TransformComponent>(e1);
         auto &transform2 = componentManager->GetComponent<MonaECS::TransformComponent>(e2);
 
-        // Inverse the velocity of the body by the normal
+        glm::vec3 pos1 = (*transform1.tHandle)->GetLocalTranslation(); 
+        glm::vec3 pos2 = (*transform2.tHandle)->GetLocalTranslation(); 
+
         auto &body1 = componentManager->GetComponent<MonaECS::BodyComponent>(e1);
         auto &body2 = componentManager->GetComponent<MonaECS::BodyComponent>(e2);
 
-        body1.velocity = -glm::reflect(body1.velocity, normal);
-        body2.velocity = -glm::reflect(body2.velocity, normal);
+    
+        body1.acceleration = glm::reflect(body1.acceleration, GetNormals(pos1));
+        body2.acceleration = glm::reflect(body2.acceleration, GetNormals(pos2));
+        body1.velocity = glm::reflect(body1.velocity, GetNormals(pos1));
+        body2.velocity = glm::reflect(body2.velocity, GetNormals(pos2));
     }
 
 private:
+    glm::vec3 GetNormals(glm::vec3 pos){
+        if(pos.x < -17.5f){
+            return glm::vec3(-1.0f, 0.0f, 0.0f);
+        }
+        else if(pos.x > 17.5f){
+            return glm::vec3(1.0f, 0.0f, 0.0f);
+        }
+        else if(pos.y > 25.0f){
+            return glm::vec3(0.0f, -1.0f, 0.0f);
+        }
+        else if(pos.y < -4.0f){
+            return glm::vec3(0.0f, 1.0f, 0.0f);
+        }
+        else{
+            return glm::vec3(0.0f);
+        }
+    }
     Mona::TransformHandle m_transform;
     Mona::TransformHandle m_ballTransform;
     Mona::RigidBodyHandle m_ballRigidBody;
@@ -133,9 +204,13 @@ public:
 		float sideWallOffset = 19.0f;
         world.CreateGameObject<Wall>(glm::vec3(-sideWallOffset, 0.0f, 0.0f), sideWallScale, &componentManager, &eventManager);
         world.CreateGameObject<Wall>(glm::vec3(sideWallOffset, 0.0f, 0.0f), sideWallScale, &componentManager, &eventManager);
+        
+        //world.CreateGameObject<Block>(glm::vec3(2.0f, 15.0f, 0.0f), glm::vec3(5.0f, 1.0f, 1.0f), &componentManager, &eventManager);
 
         systemManager.RegisterSystem<MonaECS::StatsSystem>();
+        systemManager.RegisterSystem<MonaECS::MovementSystem>();
         systemManager.RegisterSystem<MonaECS::CollisionSystem>();
+		//systemManager.RegisterSystem<MonaECS::InputSystem>();
         systemManager.StartUpSystems(componentManager, eventManager);
 
     }

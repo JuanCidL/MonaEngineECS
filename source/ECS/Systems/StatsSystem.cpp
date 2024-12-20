@@ -18,16 +18,13 @@ namespace MonaECS
         componentManager.ForEach<Stats>(
             [&](entt::entity entity, Stats &stats)
             {
-                stats.health -= 0.1f;
                 if (stats.health > 30.0f && stats.health <= 60.0f)
                 {
                     stats.state = StatsColors::green;
-                    std::cout << "Stat State: green" << std::endl;
                 }
                 else if (stats.health > 0.0f && stats.health <= 30.0f)
                 {
                     stats.state = StatsColors::blue;
-                    std::cout << "Stat State: blue" << std::endl;
                 }
                 else if (stats.health <= 0.0f)
                 {
@@ -36,7 +33,6 @@ namespace MonaECS
                 else
                 {
                     stats.state = StatsColors::red;
-                    std::cout << "Stat State: red" << std::endl;
                 }
             });
     }

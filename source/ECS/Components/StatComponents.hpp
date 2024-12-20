@@ -13,11 +13,11 @@ namespace MonaECS
     };
     struct Stats
     {
+        glm::vec3 speed;
         float health = 100.0f;
-        float speed = 10.0f;
         StatsColors state = StatsColors::red;
 
-        glm::vec3 getColor() // tengo la duda con que esto esté acá
+        glm::vec3 GetColor() 
         {
             switch (state)
             {
@@ -29,6 +29,7 @@ namespace MonaECS
                 return glm::vec3(0.0f, 0.0f, 1.0f);
             }
         }
+
     };
 }
 
