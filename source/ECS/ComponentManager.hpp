@@ -4,6 +4,7 @@
 #include <entt/entt.hpp>
 #include <unordered_map>
 #include <typeindex>
+#include "../World/World.hpp"
 
 namespace MonaECS
 {
@@ -74,9 +75,20 @@ namespace MonaECS
             return m_componentCount[typeid(ComponentType)];
         }
 
+        void SetWorld(Mona::World *world)
+        {
+            m_world = world;
+        }
+
+        Mona::World* GetWorld()
+        {
+            return m_world;
+        }
+
     private:
         entt::registry m_registry;
         std::unordered_map<std::type_index, uint32_t> m_componentCount;
+        Mona::World *m_world;
     };   
 }
 

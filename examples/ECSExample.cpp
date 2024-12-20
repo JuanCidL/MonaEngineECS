@@ -3,6 +3,10 @@
 #include "ECS/ECS.hpp"
 #include "ECS/Systems/StatsSystem.hpp"
 #include "ECS/Systems/CollisionSystem.hpp"
+#include "ECS/Systems/MovementSystem.hpp"
+#include "ECS/Systems/InputSystem.hpp"
+#include "ECS/Events/CollisionEvents.hpp"
+#include <ECS/Events/InputEvents.hpp>
 
 struct TestEvent
 {
@@ -24,6 +28,12 @@ public:
 	}
 };
 
+void OnInputEvent(const MonaECS::MoveInputEvent &event)
+{
+	std::cout<<"Move input event detected"<<std::endl;
+	// std::cout << "Move input event detected" << event.moveDir.x << " " << event.moveDir.y << " " << event.moveDir.z << std::endl;
+}
+
 void CreateCamera(Mona::World &world)
 {
 	auto camera = world.CreateGameObject<Mona::GameObject>();
@@ -35,7 +45,7 @@ void CreateCamera(Mona::World &world)
 class Box : public Mona::GameObject
 {
 public:
-	Box(float velocity, MonaECS::ComponentManager *componentManager) : m_paddleVelocity(velocity), componentManager(componentManager) {}
+	Box(float velocity, MonaECS::ComponentManager *componentManager, glm::vec3 vel=glm::vec3(0.0f, 0.0f, 1.0f)) : m_velocity(vel), componentManager(componentManager) {}
 	~Box() = default;
 	virtual void UserStartUp(Mona::World &world) noexcept
 	{
@@ -54,9 +64,10 @@ public:
 
 		// Entity for the box
 		auto e = componentManager->CreateEntity();
+		boxEntity = e;
 		componentManager->AddComponent<MonaECS::TransformComponent>(e, &m_boxTransform);
 		componentManager->AddComponent<MonaECS::ColliderComponent>(e, glm::vec3(boxSize), true);
-		componentManager->AddComponent<MonaECS::BodyComponent>(e, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f), 1.0f);
+		componentManager->AddComponent<MonaECS::BodyComponent>(e, m_velocity, glm::vec3(0.0f), 1.0f);
 
 
 		auto boxMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
@@ -70,12 +81,24 @@ public:
 	{
 	}
 
+	void SetTranslation(glm::vec3 translation)
+	{
+		m_transform->SetTranslation(translation);
+		m_boxTransform->SetTranslation(translation + glm::vec3(0.0f, 2.0f, 0.0f));
+	}
+
+	entt::entity GetBoxEntity()
+	{
+		return boxEntity;
+	}
+
 private:
 	Mona::TransformHandle m_transform;
 	Mona::TransformHandle m_boxTransform;
 	MonaECS::ComponentManager *componentManager;
+	entt::entity boxEntity;
 
-	float m_paddleVelocity;
+	glm::vec3 m_velocity;
 };
 
 class MinimalSetup : public Mona::Application
@@ -98,12 +121,43 @@ public:
 		// eventManager.Subscribe<TestEvent, ExampleClassUsingEvent, &ExampleClassUsingEvent::OnEvent>(exampleClass);
 		world.SetAmbientLight(glm::vec3(0.3f));
 		CreateCamera(world);
-		world.CreateGameObject<Box>(1.0f, &componentManager);
+		componentManager.SetWorld(&world);
+
+		auto box1 = world.CreateGameObject<Box>(1.0f, &componentManager);
+		auto box2 = world.CreateGameObject<Box>(-1.0f, &componentManager, glm::vec3(0.0f, 0.0f, -1.0f));
+
+		auto b1e = box1->GetBoxEntity();
+		componentManager.AddComponent<MonaECS::MoveInputComponent>(b1e);
+
+		box2->SetTranslation(glm::vec3(0.0f, 0.0f, 20.0f));
+
+		// now in x axis
+		auto box3 = world.CreateGameObject<Box>(1.0f, &componentManager, glm::vec3(1.0f, 0.0f, 0.0f));
+		auto box4 = world.CreateGameObject<Box>(-1.0f, &componentManager, glm::vec3(-1.0f, 0.0f, 0.0f));
+
+		box3->SetTranslation(glm::vec3(0.0f, 0.0f, 5.0f));
+		box4->SetTranslation(glm::vec3(20.0f, 0.0f, 5.0f));
+
+
+		// now in y axis
+		auto box5 = world.CreateGameObject<Box>(1.0f, &componentManager, glm::vec3(0.0f, 1.0f, 0.0f));
+		auto box6 = world.CreateGameObject<Box>(-1.0f, &componentManager, glm::vec3(0.0f, -1.0f, 0.0f));
+
+		box5->SetTranslation(glm::vec3(0.0f, 0.0f, 10.0f));
+		box6->SetTranslation(glm::vec3(0.0f, 20.0f, 10.0f));
+
+
+
+
 
 		systemManager.RegisterSystem<MonaECS::StatsSystem>();
 		systemManager.RegisterSystem<MonaECS::CollisionSystem>();
+		systemManager.RegisterSystem<MonaECS::MovementSystem>();
+		systemManager.RegisterSystem<MonaECS::InputSystem>();
 
 		systemManager.StartUpSystems(componentManager, eventManager);
+		eventManager.Subscribe<MonaECS::CollisionEvent, MinimalSetup, &MinimalSetup::OnCollision>(*this);
+		eventManager.Subscribe<MonaECS::MoveInputEvent, &OnInputEvent>();
 	}
 
 	virtual void UserShutDown(Mona::World &world) noexcept override
@@ -113,13 +167,24 @@ public:
 	virtual void UserUpdate(Mona::World &world, float timeStep) noexcept override
 	{
 		systemManager.UpdateSystems(componentManager, eventManager, timeStep);
-		// time += timeStep;
-		// if (time > 1.0f)
-		// {
-		// 	TestEvent event{10};
-		// 	eventManager.Publish(event);
-		// 	time = 0.0f;
-		// }
+	}
+
+	void OnCollision(const MonaECS::CollisionEvent &event)
+	{
+		std::cout << "Collision detected" << std::endl;
+		auto e1 = event.entity1;
+		auto e2 = event.entity2;
+		auto normal = event.normal;
+
+		auto &transform1 = componentManager.GetComponent<MonaECS::TransformComponent>(e1);
+		auto &transform2 = componentManager.GetComponent<MonaECS::TransformComponent>(e2);
+
+		// Inverse the velocity of the body by the normal
+		auto &body1 = componentManager.GetComponent<MonaECS::BodyComponent>(e1);
+		auto &body2 = componentManager.GetComponent<MonaECS::BodyComponent>(e2);
+
+		body1.velocity = glm::reflect(body1.velocity, normal);
+		body2.velocity = glm::reflect(body2.velocity, normal);
 	}
 
 private:

@@ -91,10 +91,14 @@ set(MONA_HEADERS
 				ECS/ECS.hpp
 				ECS/Components/StatComponents.hpp
 				ECS/Components/CollisionComponents.hpp
+				ECS/Components/InputComponents.hpp
 				ECS/Events/CollisionEvents.hpp
+				ECS/Events/InputEvents.hpp
 				ECS/Systems/BaseSystem.hpp
 				ECS/Systems/StatsSystem.hpp
-				ECS/Systems/CollisionSystem.hpp)
+				ECS/Systems/CollisionSystem.hpp
+				ECS/Systems/MovementSystem.hpp
+				ECS/Systems/InputSystem.hpp)
 set(MONA_SOURCES
 				CharacterNavigation/AnimationValidator.cpp
 				CharacterNavigation/IKRigBase.cpp
@@ -136,7 +140,9 @@ set(MONA_SOURCES
 				DebugDrawing/IKNavigationDebugDraw.cpp
 				DebugDrawing/DebugDrawingSystem.cpp
 				ECS/Systems/StatsSystem.cpp
-				ECS/Systems/CollisionSystem.cpp)
+				ECS/Systems/CollisionSystem.cpp
+				ECS/Systems/MovementSystem.cpp
+				ECS/Systems/InputSystem.cpp)
 file(GLOB_RECURSE Shaders  "${CMAKE_SOURCE_DIR}/Assets/Shaders/*")
 source_group("Shaders" FILES ${Shaders})
 

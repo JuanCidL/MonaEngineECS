@@ -25,7 +25,7 @@ namespace MonaECS
         Mona::TransformHandle *tHandle;
         Mona::TransformHandle operator *() { return *tHandle; };
     };
-
+    
 }
 
 #endif

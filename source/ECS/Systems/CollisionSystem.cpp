@@ -7,7 +7,7 @@ namespace MonaECS
 
     void CollisionSystem::Update(ComponentManager &componentManager, EventManager &eventManager, float deltaTime) noexcept
     {
-        UpdatePositions(componentManager, deltaTime);
+        // UpdatePositions(componentManager, deltaTime);
         auto collisions = CheckCollisions(componentManager);
         for (auto &collision : collisions)
         {
