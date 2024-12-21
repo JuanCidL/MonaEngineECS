@@ -3,6 +3,7 @@
 #include "ECS/Systems/StatsSystem.hpp"
 #include "ECS/Systems/CollisionSystem.hpp"
 #include "ECS/Systems/MovementSystem.hpp"
+#include "ECS/Systems/InputSystem.hpp"
 #include "ECS/Components/CollisionComponents.hpp"
 #include "ECS/Components/StatComponents.hpp"
 #include "ECS/Components/InputComponents.hpp"
@@ -28,62 +29,6 @@ void CreateBasicCameraWithMusicAndLight(Mona::World &world)
 
     world.AddComponent<Mona::DirectionalLightComponent>(camera, glm::vec3(1.0f));
 }
-
-class Block : public Mona::GameObject
-{
-public:
-    Block(const glm::vec3 &position, const glm::vec3 &scale, MonaECS::ComponentManager *component, MonaECS::EventManager *event) : m_position(position), m_scale(scale), componentManager(component), eventManager(event) {};
-    ~Block() = default;
-    virtual void UserStartUp(Mona::World &world) noexcept
-    {
-        m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-        auto wall = world.CreateGameObject<Mona::GameObject>();
-        auto &meshManager = Mona::MeshManager::GetInstance();
-
-        m_blockTransform = world.AddComponent<Mona::TransformComponent>(wall);
-        m_blockTransform->SetTranslation(m_position);
-        m_blockTransform->SetScale(m_scale);
-
-        auto redBlockMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
-        redBlockMaterial->SetDiffuseColor(glm::vec3(1.0f, 0.0f, 0.0f));
-        auto greenBlockMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
-        greenBlockMaterial->SetDiffuseColor(glm::vec3(0.0f, 1.0f, 0.0f));
-        auto blueBlockMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
-        blueBlockMaterial->SetDiffuseColor(glm::vec3(0.0f, 0.0f, 1.0f));
-
-        m_materialVector.push_back(redBlockMaterial);
-        m_materialVector.push_back(greenBlockMaterial);
-        m_materialVector.push_back(blueBlockMaterial);
-
-        m_meshHandle = world.AddComponent<Mona::StaticMeshComponent>(wall, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), m_materialVector[0]);
-
-        auto blockEntity = componentManager->CreateEntity();
-        componentManager->AddComponent<MonaECS::TransformComponent>(blockEntity, &m_blockTransform);
-        componentManager->AddComponent<MonaECS::BodyComponent>(blockEntity, glm::vec3(0.0f), glm::vec3(0.0f), 10.0f);
-        componentManager->AddComponent<MonaECS::ColliderComponent>(blockEntity, m_scale, false);
-        componentManager->AddComponent<MonaECS::Stats>(blockEntity);
-        // eventManager->Subscribe<MonaECS::CollisionEvent, Block, &Block::OnCollision>(*this);
-        eventManager->Subscribe<MonaECS::ColorChangeEvent, Block, &Block::OnColorChange>(*this);
-    }
-
-    void OnColorChange(const MonaECS::ColorChangeEvent &event)
-    {
-        entt::registry &registry = componentManager->GetRegistry();
-        auto ent = event.entity;
-        auto stat = registry.get<MonaECS::Stats>(ent);
-        m_meshHandle->SetMaterial(m_materialVector[static_cast<int>(stat.state)]);
-    }
-
-private:
-    const glm::vec3 &m_position;
-    const glm::vec3 &m_scale;
-    Mona::TransformHandle m_transform;
-    Mona::TransformHandle m_blockTransform;
-    Mona::StaticMeshHandle m_meshHandle;
-    std::vector<std::shared_ptr<Mona::DiffuseFlatMaterial>> m_materialVector;
-    MonaECS::ComponentManager *componentManager;
-    MonaECS::EventManager *eventManager;
-};
 
 class Wall : public Mona::GameObject
 {
@@ -118,6 +63,100 @@ private:
     const glm::vec3 &m_scale;
     Mona::TransformHandle m_transform;
     Mona::TransformHandle m_wallTransform;
+    MonaECS::ComponentManager *componentManager;
+    MonaECS::EventManager *eventManager;
+};
+
+class Block : public Mona::GameObject
+{
+public:
+    Block(const glm::vec3 &position, const glm::vec3 &scale, MonaECS::ComponentManager *component, MonaECS::EventManager *event) : m_position(position), m_scale(scale), componentManager(component), eventManager(event) {};
+    ~Block() = default;
+    virtual void UserStartUp(Mona::World &world) noexcept
+    {
+        m_transform = world.AddComponent<Mona::TransformComponent>(*this);
+        auto block = world.CreateGameObject<Mona::GameObject>();
+        auto &meshManager = Mona::MeshManager::GetInstance();
+
+        m_blockTransform = world.AddComponent<Mona::TransformComponent>(block);
+        m_blockTransform->SetTranslation(m_position);
+        m_blockTransform->SetScale(m_scale);
+
+        auto redBlockMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+        redBlockMaterial->SetDiffuseColor(glm::vec3(1.0f, 0.0f, 0.0f));
+        auto greenBlockMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+        greenBlockMaterial->SetDiffuseColor(glm::vec3(0.0f, 1.0f, 0.0f));
+        auto blueBlockMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+        blueBlockMaterial->SetDiffuseColor(glm::vec3(0.0f, 0.0f, 1.0f));
+
+        m_materialVector.push_back(redBlockMaterial);
+        m_materialVector.push_back(greenBlockMaterial);
+        m_materialVector.push_back(blueBlockMaterial);
+
+        m_meshHandle = world.AddComponent<Mona::StaticMeshComponent>(block, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), m_materialVector[0]);
+
+        auto blockEntity = componentManager->CreateEntity();
+        componentManager->AddComponent<MonaECS::TransformComponent>(blockEntity, &m_blockTransform);
+        componentManager->AddComponent<MonaECS::BodyComponent>(blockEntity, glm::vec3(0.0f), glm::vec3(0.0f), 10.0f);
+        componentManager->AddComponent<MonaECS::ColliderComponent>(blockEntity, m_scale, false);
+        componentManager->AddComponent<MonaECS::Stats>(blockEntity);
+        eventManager->Subscribe<MonaECS::ColorChangeEvent, Block, &Block::OnColorChange>(*this);
+    }
+
+    void OnColorChange(const MonaECS::ColorChangeEvent &event)
+    {
+        entt::registry &registry = componentManager->GetRegistry();
+        auto ent = event.entity;
+        auto stat = registry.get<MonaECS::Stats>(ent);
+        m_meshHandle->SetMaterial(m_materialVector[static_cast<int>(stat.state)]);
+    }
+
+private:
+    const glm::vec3 &m_position;
+    const glm::vec3 &m_scale;
+    Mona::TransformHandle m_transform;
+    Mona::TransformHandle m_blockTransform;
+    Mona::StaticMeshHandle m_meshHandle;
+    std::vector<std::shared_ptr<Mona::DiffuseFlatMaterial>> m_materialVector;
+    MonaECS::ComponentManager *componentManager;
+    MonaECS::EventManager *eventManager;
+};
+
+class Paddle : public Mona::GameObject
+{
+public:
+    Paddle(MonaECS::ComponentManager *component, MonaECS::EventManager *event) : componentManager(component), eventManager(event) {};
+    ~Paddle() = default;
+    virtual void UserStartUp(Mona::World &world) noexcept
+    {
+        m_transform = world.AddComponent<Mona::TransformComponent>(*this);
+        auto paddle = world.CreateGameObject<Mona::GameObject>();
+        auto &meshManager = Mona::MeshManager::GetInstance();
+
+        m_paddleTransform = world.AddComponent<Mona::TransformComponent>(paddle);
+        m_paddleTransform->SetTranslation(m_transform->GetLocalTranslation());
+        m_paddleTransform->SetScale(m_scale);
+
+        auto paddleMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+        paddleMaterial->SetDiffuseColor(glm::vec3(0.2f, 0.2f, 0.2f));
+        world.AddComponent<Mona::StaticMeshComponent>(paddle, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), paddleMaterial);
+
+        auto paddleEntity = componentManager->CreateEntity();
+        componentManager->AddComponent<MonaECS::TransformComponent>(paddleEntity, &m_paddleTransform);
+        componentManager->AddComponent<MonaECS::BodyComponent>(paddleEntity, glm::vec3(0.0f), glm::vec3(0.0f), 10.0f);
+        componentManager->AddComponent<MonaECS::ColliderComponent>(paddleEntity, m_scale, false);
+        componentManager->AddComponent<MonaECS::Stats>(paddleEntity);
+        eventManager->Subscribe<MonaECS::MoveInputEvent, Paddle, &Paddle::OnInputPress>(*this);
+    }
+
+    void OnInputPress(const MonaECS::MoveInputEvent &event)
+    {
+    }
+
+private:
+    const glm::vec3 &m_scale = glm::vec3(4.0f, 1.0f, 1.0f);
+    Mona::TransformHandle m_transform;
+    Mona::TransformHandle m_paddleTransform;
     MonaECS::ComponentManager *componentManager;
     MonaECS::EventManager *eventManager;
 };
@@ -214,8 +253,7 @@ private:
         }
         else
         {
-            std::cout << "xd" << std::endl;
-            return glm::vec3(0.0f, -1.0f, 0.0f);
+            return glm::vec3(0.0f);
         }
     }
     Mona::TransformHandle m_transform;
@@ -244,12 +282,13 @@ public:
         world.CreateGameObject<Wall>(glm::vec3(-sideWallOffset, 0.0f, 0.0f), sideWallScale, &componentManager, &eventManager);
         world.CreateGameObject<Wall>(glm::vec3(sideWallOffset, 0.0f, 0.0f), sideWallScale, &componentManager, &eventManager);
 
-        world.CreateGameObject<Block>(glm::vec3(2.0f, 15.0f, 0.0f), glm::vec3(5.0f, 1.0f, 1.0f), &componentManager, &eventManager);
+        world.CreateGameObject<Block>(glm::vec3(2.0f, 15.0f, 0.0f), glm::vec3(3.0f, 1.0f, 1.0f), &componentManager, &eventManager);
+        world.CreateGameObject<Paddle>(&componentManager, &eventManager);
 
         systemManager.RegisterSystem<MonaECS::StatsSystem>();
         systemManager.RegisterSystem<MonaECS::MovementSystem>();
         systemManager.RegisterSystem<MonaECS::CollisionSystem>();
-        // systemManager.RegisterSystem<MonaECS::InputSystem>();
+        systemManager.RegisterSystem<MonaECS::InputSystem>();
         systemManager.StartUpSystems(componentManager, eventManager);
     }
 
