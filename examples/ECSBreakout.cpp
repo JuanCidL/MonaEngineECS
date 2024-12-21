@@ -62,26 +62,8 @@ public:
         componentManager->AddComponent<MonaECS::BodyComponent>(blockEntity, glm::vec3(0.0f), glm::vec3(0.0f), 10.0f);
         componentManager->AddComponent<MonaECS::ColliderComponent>(blockEntity, m_scale, false);
         componentManager->AddComponent<MonaECS::Stats>(blockEntity);
-        eventManager->Subscribe<MonaECS::CollisionEvent, Block, &Block::OnCollision>(*this);
+        // eventManager->Subscribe<MonaECS::CollisionEvent, Block, &Block::OnCollision>(*this);
         eventManager->Subscribe<MonaECS::ColorChangeEvent, Block, &Block::OnColorChange>(*this);
-    }
-
-    void OnCollision(const MonaECS::CollisionEvent &event)
-    {
-        auto e1 = event.entity1;
-        auto e2 = event.entity2;
-        entt::registry &registry = componentManager->GetRegistry();
-
-        if (registry.any_of<MonaECS::Stats>(e1))
-        {
-            auto &stats = componentManager->GetComponent<MonaECS::Stats>(e1);
-            stats.health -= 40;
-        }
-        else if (registry.any_of<MonaECS::Stats>(e2))
-        {
-            auto &stats = componentManager->GetComponent<MonaECS::Stats>(e2);
-            stats.health -= 40;
-        }
     }
 
     void OnColorChange(const MonaECS::ColorChangeEvent &event)
@@ -106,7 +88,11 @@ private:
 class Wall : public Mona::GameObject
 {
 public:
-    Wall(const glm::vec3 &position, const glm::vec3 &scale, MonaECS::ComponentManager *component, MonaECS::EventManager *event) : m_position(position), m_scale(scale), componentManager(component), eventManager(event) {};
+    Wall(const glm::vec3 &position,
+         const glm::vec3 &scale,
+         MonaECS::ComponentManager *component,
+         MonaECS::EventManager *event)
+        : m_position(position), m_scale(scale), componentManager(component), eventManager(event) {};
     ~Wall() = default;
     virtual void UserStartUp(Mona::World &world) noexcept
     {
@@ -159,7 +145,7 @@ public:
 
         auto ballEntity = componentManager->CreateEntity();
         componentManager->AddComponent<MonaECS::TransformComponent>(ballEntity, &m_ballTransform);
-        componentManager->AddComponent<MonaECS::BodyComponent>(ballEntity, glm::vec3(2.0f, 10.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), 10.0f); // Fue necesario ponerle 1 en x e y
+        componentManager->AddComponent<MonaECS::BodyComponent>(ballEntity, glm::vec3(2.0f, 10.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), 10.0f);
         componentManager->AddComponent<MonaECS::ColliderComponent>(ballEntity, glm::vec3(ballRadius), false);
         eventManager->Subscribe<MonaECS::CollisionEvent, Ball, &Ball::OnCollision>(*this);
     }
@@ -167,6 +153,7 @@ public:
     {
         auto e1 = event.entity1;
         auto e2 = event.entity2;
+        entt::registry &registry = componentManager->GetRegistry();
 
         auto &transform1 = componentManager->GetComponent<MonaECS::TransformComponent>(e1);
         auto &transform2 = componentManager->GetComponent<MonaECS::TransformComponent>(e2);
@@ -176,6 +163,29 @@ public:
 
         auto &body1 = componentManager->GetComponent<MonaECS::BodyComponent>(e1);
         auto &body2 = componentManager->GetComponent<MonaECS::BodyComponent>(e2);
+
+        if (registry.any_of<MonaECS::Stats>(e1))
+        {
+            auto &stats = componentManager->GetComponent<MonaECS::Stats>(e1);
+            stats.health -= 40;
+            glm::vec3 new_direction = glm::normalize(glm::vec3((pos2.x - pos1.x), -body2.velocity.y, 0.0f));
+            float v_mod = std::sqrt(std::pow(body2.velocity.x, 2) + std::pow(body2.velocity.y, 2));
+            float a_mod = std::sqrt(std::pow(body2.acceleration.x, 2) + std::pow(body2.acceleration.y, 2));
+            body2.velocity = new_direction * v_mod;
+            body2.acceleration = new_direction * a_mod;
+            return;
+        }
+        else if (registry.any_of<MonaECS::Stats>(e2))
+        {
+            auto &stats = componentManager->GetComponent<MonaECS::Stats>(e2);
+            stats.health -= 40;
+            glm::vec3 new_direction = glm::normalize(glm::vec3((pos1.x - pos2.x), -body1.velocity.y, 0.0f));
+            float v_mod = std::sqrt(std::pow(body1.velocity.x, 2) + std::pow(body1.velocity.y, 2));
+            float a_mod = std::sqrt(std::pow(body1.acceleration.x, 2) + std::pow(body1.acceleration.y, 2));
+            body1.velocity = new_direction * v_mod;
+            body1.acceleration = new_direction * a_mod;
+            return;
+        }
 
         body1.acceleration = glm::reflect(body1.acceleration, GetNormals(pos1));
         body2.acceleration = glm::reflect(body2.acceleration, GetNormals(pos2));
@@ -204,6 +214,7 @@ private:
         }
         else
         {
+            std::cout << "xd" << std::endl;
             return glm::vec3(0.0f, -1.0f, 0.0f);
         }
     }
