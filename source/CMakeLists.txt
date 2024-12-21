@@ -93,6 +93,7 @@ set(MONA_HEADERS
 				ECS/Components/CollisionComponents.hpp
 				ECS/Components/InputComponents.hpp
 				ECS/Events/CollisionEvents.hpp
+				ECS/Events/ColorChangeEvents.hpp
 				ECS/Events/InputEvents.hpp
 				ECS/Systems/BaseSystem.hpp
 				ECS/Systems/StatsSystem.hpp
