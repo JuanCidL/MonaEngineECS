@@ -1,11 +1,12 @@
 #pragma once
 #ifndef MOVEMENT_SYSTEM_HPP
 #define MOVEMENT_SYSTEM_HPP
-#include "./BaseSystem.hpp"
-#include "../Components/CollisionComponents.hpp"
-#include "../Events./InputEvents.hpp"
 
 namespace MonaECS {
+    class BaseSystem;
+    struct TransformComponent;
+    struct BodyComponent;
+
     class MovementSystem : public BaseSystem
     {
     public:

@@ -1,4 +1,8 @@
+#include "./BaseSystem.hpp"
 #include "./StatsSystem.hpp"
+#include "../Components/StatComponents.hpp"
+#include "../ComponentManager.hpp"
+#include "../EventManager.hpp"
 #include "../Events/ColorChangeEvents.hpp"
 #include <iostream>
 
