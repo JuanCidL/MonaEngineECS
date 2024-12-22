@@ -1,9 +1,6 @@
 #include "MonaEngine.hpp"
 #include "ECS/ECS.hpp"
-#include "ECS/Systems/StatsSystem.hpp"
-#include "ECS/Systems/CollisionSystem.hpp"
-#include "ECS/Systems/MovementSystem.hpp"
-#include "ECS/Systems/InputSystem.hpp"
+#include "ECS/Systems.hpp"
 #include "ECS/Components/CollisionComponents.hpp"
 #include "ECS/Components/StatComponents.hpp"
 #include "ECS/Components/InputComponents.hpp"
@@ -28,6 +25,12 @@ void CreateBasicCameraWithMusicAndLight(Mona::World &world)
     audioSource->Play();
 
     world.AddComponent<Mona::DirectionalLightComponent>(camera, glm::vec3(1.0f));
+}
+
+void OnInputEvent(const MonaECS::MoveInputEvent &event)
+{
+    std::cout << "Move input event detected" << std::endl;
+    // std::cout << "Move input event detected" << event.moveDir.x << " " << event.moveDir.y << " " << event.moveDir.z << std::endl;
 }
 
 class Wall : public Mona::GameObject
@@ -146,11 +149,7 @@ public:
         componentManager->AddComponent<MonaECS::BodyComponent>(paddleEntity, glm::vec3(0.0f), glm::vec3(0.0f), 10.0f);
         componentManager->AddComponent<MonaECS::ColliderComponent>(paddleEntity, m_scale, false);
         componentManager->AddComponent<MonaECS::Stats>(paddleEntity);
-        eventManager->Subscribe<MonaECS::MoveInputEvent, Paddle, &Paddle::OnInputPress>(*this);
-    }
-
-    void OnInputPress(const MonaECS::MoveInputEvent &event)
-    {
+        componentManager->AddComponent<MonaECS::MoveInputComponent>(paddleEntity);
     }
 
 private:
@@ -286,10 +285,11 @@ public:
         world.CreateGameObject<Paddle>(&componentManager, &eventManager);
 
         systemManager.RegisterSystem<MonaECS::StatsSystem>();
-        systemManager.RegisterSystem<MonaECS::MovementSystem>();
         systemManager.RegisterSystem<MonaECS::CollisionSystem>();
+        systemManager.RegisterSystem<MonaECS::MovementSystem>();
         systemManager.RegisterSystem<MonaECS::InputSystem>();
         systemManager.StartUpSystems(componentManager, eventManager);
+        eventManager.Subscribe<MonaECS::MoveInputEvent, &OnInputEvent>();
     }
 
     virtual void UserShutDown(Mona::World &world) noexcept override
