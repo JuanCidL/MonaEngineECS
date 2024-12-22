@@ -4,84 +4,40 @@
 #include "ECS/Components.hpp"
 #include "ECS/Events.hpp"
 #include "ECS/Systems.hpp"
-
-struct TestEvent
-{
-	int value;
-};
-void func(const TestEvent &event)
-{
-	std::cout << "Event value: " << event.value << std::endl;
-}
-
-class ExampleClassUsingEvent
-{
-public:
-	ExampleClassUsingEvent() = default;
-	~ExampleClassUsingEvent() = default;
-	void OnEvent(const TestEvent &event)
-	{
-		std::cout << "Event value: " << event.value << std::endl;
-	}
-};
-
-void OnInputEvent(const MonaECS::MoveInputEvent &event)
-{
-	std::cout<<"Move input event detected"<<std::endl;
-	// std::cout << "Move input event detected" << event.moveDir.x << " " << event.moveDir.y << " " << event.moveDir.z << std::endl;
-}
+#include <random>
 
 void CreateCamera(Mona::World &world)
 {
 	auto camera = world.CreateGameObject<Mona::GameObject>();
-	auto transform = world.AddComponent<Mona::TransformComponent>(camera, glm::vec3(0.0f, -15.0f, 15.0f));
-	transform->Rotate(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f);
+	auto transform = world.AddComponent<Mona::TransformComponent>(camera, glm::vec3(0.0f, -50.0f, 20.0f));
+	transform->Rotate(glm::vec3(-1.0f, 0.0f, 0.0f), 0.0f);
 	world.SetMainCamera(world.AddComponent<Mona::CameraComponent>(camera));
 }
 
-class Box : public Mona::GameObject
+
+class StaticBox : public Mona::GameObject
 {
 public:
-	Box(float velocity, MonaECS::ECSHandler *ecs, glm::vec3 vel=glm::vec3(0.0f, 0.0f, 1.0f)) : m_velocity(vel), ecs(ecs) {}
-	~Box() = default;
+	StaticBox(glm::vec3 translation, glm::vec3 scale) : m_translation(translation), m_scale(scale) {}
+	~StaticBox() = default;
 	virtual void UserStartUp(Mona::World &world) noexcept
 	{
-		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-
-		auto boxTransformEntity = ecs->CreateEntity();
-
-		auto &meshManager = Mona::MeshManager::GetInstance();
 		auto box = world.CreateGameObject<Mona::GameObject>();
-		float boxSize = 0.5f;
+		
 		m_boxTransform = world.AddComponent<Mona::TransformComponent>(box);
-		m_boxTransform->SetRotation(m_transform->GetLocalRotation());
-		m_boxTransform->SetTranslation(m_transform->GetLocalTranslation() + glm::vec3(0.0f, 2.0f, 0.0f));
-		m_boxTransform->SetScale(glm::vec3(boxSize));
-		ecs->AddComponent<MonaECS::TransformComponent>(boxTransformEntity, &m_boxTransform);
+		m_boxTransform->SetTranslation(m_translation);
+		m_boxTransform->SetScale(m_scale);
 
-		// Entity for the box
+		auto ecs = world.GetECSHandler();
 		auto e = ecs->CreateEntity();
 		boxEntity = e;
 		ecs->AddComponent<MonaECS::TransformComponent>(e, &m_boxTransform);
-		ecs->AddComponent<MonaECS::ColliderComponent>(e, glm::vec3(boxSize), true);
-		ecs->AddComponent<MonaECS::BodyComponent>(e, m_velocity, glm::vec3(0.0f), 1.0f);
-
+		ecs->AddComponent<MonaECS::ColliderComponent>(e, m_scale, false);
+		ecs->AddComponent<MonaECS::BodyComponent>(e, glm::vec3(0.0f), glm::vec3(0.0f), 1.0f);
 
 		auto boxMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
 		boxMaterial->SetDiffuseColor(glm::vec3(0.75f, 0.3f, 0.3f));
-		world.AddComponent<Mona::StaticMeshComponent>(box, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), boxMaterial);
-
-		Mona::BoxShapeInformation boxInfo(glm::vec3(boxSize));
-	}
-
-	virtual void UserUpdate(Mona::World &world, float timeStep) noexcept
-	{
-	}
-
-	void SetTranslation(glm::vec3 translation)
-	{
-		m_transform->SetTranslation(translation);
-		m_boxTransform->SetTranslation(translation + glm::vec3(0.0f, 2.0f, 0.0f));
+		world.AddComponent<Mona::StaticMeshComponent>(box, Mona::MeshManager::GetInstance().LoadMesh(Mona::Mesh::PrimitiveType::Cube), boxMaterial);
 	}
 
 	entt::entity GetBoxEntity()
@@ -90,56 +46,186 @@ public:
 	}
 
 private:
-	Mona::TransformHandle m_transform;
 	Mona::TransformHandle m_boxTransform;
-	MonaECS::ECSHandler *ecs;
+	glm::vec3 m_translation;
+	glm::vec3 m_scale;
 	entt::entity boxEntity;
-
-	glm::vec3 m_velocity;
 };
 
-class MinimalSetup : public Mona::Application
+
+// Color system
+enum Color
+{
+	RED,
+	GREEN,
+	BLUE
+};
+
+struct ColorComponent
+{
+	Mona::DiffuseFlatMaterial* material;
+	Color color;
+};
+
+
+glm::vec3 getColor(Color color)
+{
+	switch (color)
+	{
+	case RED:
+		return glm::vec3(1.0f, 0.0f, 0.0f);
+	case GREEN:
+		return glm::vec3(0.0f, 1.0f, 0.0f);
+	case BLUE:
+		return glm::vec3(0.0f, 0.0f, 1.0f);
+	default:
+		return glm::vec3(1.0f);
+	}
+}
+
+Color getRandomColor()
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> dis(0, 2);
+	return static_cast<Color>(dis(gen));
+}
+
+class MovingBox : public Mona::GameObject
 {
 public:
-	MinimalSetup() = default;
-	~MinimalSetup() = default;
+	MovingBox(glm::vec3 translation, glm::vec3 velocity, float boxSize=1) : m_translation(translation), m_velocity(velocity), m_boxSize(boxSize) {}
+	~MovingBox() = default;
+	virtual void UserStartUp(Mona::World &world) noexcept
+	{
+		auto box = world.CreateGameObject<Mona::GameObject>();
+		float boxSize = 0.5f;
+		m_boxTransform = world.AddComponent<Mona::TransformComponent>(box);
+		m_boxTransform->SetTranslation(m_translation);
+		m_boxTransform->SetScale(glm::vec3(m_boxSize));
+
+		auto ecs = world.GetECSHandler();
+		auto e = ecs->CreateEntity();
+		ecs->AddComponent<MonaECS::TransformComponent>(e, &m_boxTransform);
+		ecs->AddComponent<MonaECS::ColliderComponent>(e, glm::vec3(m_boxSize), true);
+		ecs->AddComponent<MonaECS::BodyComponent>(e, m_velocity, glm::vec3(0.0f), 1.0f);
+
+		auto boxMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+		auto color = getRandomColor();
+		ecs->AddComponent<ColorComponent>(e, boxMaterial.get(), color);
+		boxMaterial->SetDiffuseColor(getColor(color));
+		world.AddComponent<Mona::StaticMeshComponent>(box, Mona::MeshManager::GetInstance().LoadMesh(Mona::Mesh::PrimitiveType::Cube), boxMaterial);
+
+		Mona::BoxShapeInformation boxInfo(glm::vec3(boxSize));
+	}
+
+	
+private:
+	Mona::TransformHandle m_boxTransform;
+	glm::vec3 m_translation;
+	glm::vec3 m_velocity;
+	float m_boxSize;
+};
+
+class ECSExample : public Mona::Application
+{
+public:
+	ECSExample() = default;
+	~ECSExample() = default;
 	virtual void UserStartUp(Mona::World &world) noexcept override
 	{
 		world.SetAmbientLight(glm::vec3(0.3f));
 		CreateCamera(world);
 		ecsHandler = world.GetECSHandler();
-		// componentManager.SetWorld(&world);
 
-		auto box1 = world.CreateGameObject<Box>(1.0f, ecsHandler);
-		auto box2 = world.CreateGameObject<Box>(-1.0f, ecsHandler, glm::vec3(0.0f, 0.0f, -1.0f));
 
-		auto b1e = box1->GetBoxEntity();
-		ecsHandler->AddComponent<MonaECS::MoveInputComponent>(b1e);
+		// Walls Setting
 
-		box2->SetTranslation(glm::vec3(0.0f, 0.0f, 20.0f));
+		float wallWidth = 1.0f;
 
-		// now in x axis
-		auto box3 = world.CreateGameObject<Box>(1.0f, ecsHandler, glm::vec3(1.0f, 0.0f, 0.0f));
-		auto box4 = world.CreateGameObject<Box>(-1.0f, ecsHandler, glm::vec3(-1.0f, 0.0f, 0.0f));
+		float topWallz = 40.0f;
+		float hWallWidth = 40.0f;
 
-		box3->SetTranslation(glm::vec3(0.0f, 0.0f, 5.0f));
-		box4->SetTranslation(glm::vec3(20.0f, 0.0f, 5.0f));
+		float vWallz = hWallWidth/2.0f;
+		float vWallx = hWallWidth - wallWidth; // To adjust the wall with the ends of the horizontal walls
 
-		// now in y axis
-		auto box5 = world.CreateGameObject<Box>(1.0f, ecsHandler, glm::vec3(0.0f, 1.0f, 0.0f));
-		auto box6 = world.CreateGameObject<Box>(-1.0f, ecsHandler, glm::vec3(0.0f, -1.0f, 0.0f));
+		float hScale = hWallWidth;
+		float vScale = vWallz - wallWidth - 0.01f; // 0.01f is to avoid collision with the horizontal walls
 
-		box5->SetTranslation(glm::vec3(0.0f, 0.0f, 10.0f));
-		box6->SetTranslation(glm::vec3(0.0f, 20.0f, 10.0f));
+		const glm::vec3 hWallScale = glm::vec3(hScale, wallWidth, wallWidth);
+		const glm::vec3 vWallScale = glm::vec3(wallWidth, wallWidth, vScale);
 
+		auto wall1 = world.CreateGameObject<StaticBox>(glm::vec3(0.0f, 0.0f, 0.0f), hWallScale);
+		auto wall2 = world.CreateGameObject<StaticBox>(glm::vec3(0.0f, 0.0f, topWallz), hWallScale);
+		auto wall3 = world.CreateGameObject<StaticBox>(glm::vec3(-vWallx, 0.0f, vWallz), vWallScale);
+		auto wall4 = world.CreateGameObject<StaticBox>(glm::vec3(vWallx, 0.0f, vWallz), vWallScale);
+		walls.push_back(wall1->GetBoxEntity());
+		walls.push_back(wall2->GetBoxEntity());
+		walls.push_back(wall3->GetBoxEntity());
+		walls.push_back(wall4->GetBoxEntity());
+
+		/*
+		 *Boxes setting
+		 */
+
+		// Positioning the boxes
+		uint16_t numBoxes = 50;
+		float boxSize = 0.5f;
+		float boxPadding = wallWidth + boxSize;
+
+		float xStart = -vWallx + boxPadding;
+		float xEnd = vWallx - boxPadding;
+		float zStart = boxPadding;
+		float zEnd = topWallz - boxPadding;
+
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<float> disX(xStart, xEnd);
+		std::uniform_real_distribution<float> disZ(zStart, zEnd);
+
+		// Randomize the velocity of the boxes
+		std::uniform_real_distribution<float> disVel(-4.0f, 4.0f);
+		auto generateNonZeroVelocity = [&disVel, &gen]() {
+			float velocity;
+			do {
+				velocity = disVel(gen);
+			} while (velocity == 0.0f);
+			return velocity*3.0f;
+		};
+
+		std::vector<glm::vec3> boxPositions;
+
+		for (uint16_t i = 0; i < numBoxes; i++)
+		{
+			glm::vec3 position;
+		    bool positionValid;
+		
+			// Generate a valid position that does not overlap with existing boxes
+			do {
+				positionValid = true;
+				position = glm::vec3(disX(gen), 0.0f, disZ(gen));
+
+				for (const auto& existingPosition : boxPositions) {
+					if (glm::distance(position, existingPosition) < boxSize * 2.0f) {
+						positionValid = false;
+						break;
+					}
+				}
+			} while (!positionValid);
+			world.CreateGameObject<MovingBox>(position, glm::vec3(generateNonZeroVelocity(), 0.0f, generateNonZeroVelocity()), boxSize);
+		}
+
+		// Subscribe to collision events
+		ecsHandler->SubscribeEvent<MonaECS::CollisionEvent, ECSExample, &ECSExample::OnCollision>(*this);
+
+		// Register systems
 		ecsHandler->RegisterSystem<MonaECS::StatsSystem>();
 		ecsHandler->RegisterSystem<MonaECS::CollisionSystem>();
 		ecsHandler->RegisterSystem<MonaECS::MovementSystem>();
 		ecsHandler->RegisterSystem<MonaECS::InputSystem>();
 
+		// Start up systems
 		ecsHandler->StartUpSystems();
-		ecsHandler->SubscribeEvent<MonaECS::CollisionEvent, MinimalSetup, &MinimalSetup::OnCollision>(*this);
-		ecsHandler->SubscribeEvent<MonaECS::MoveInputEvent, &OnInputEvent>();
 	}
 
 	virtual void UserShutDown(Mona::World &world) noexcept override
@@ -161,23 +247,64 @@ public:
 		auto &transform1 = ecsHandler->GetComponent<MonaECS::TransformComponent>(e1);
 		auto &transform2 = ecsHandler->GetComponent<MonaECS::TransformComponent>(e2);
 
-		// Inverse the velocity of the body by the normal
 		auto &body1 = ecsHandler->GetComponent<MonaECS::BodyComponent>(e1);
 		auto &body2 = ecsHandler->GetComponent<MonaECS::BodyComponent>(e2);
 
-		body1.velocity = glm::reflect(body1.velocity, normal);
-		body2.velocity = glm::reflect(body2.velocity, normal);
+		if (std::find(walls.begin(), walls.end(), e1) != walls.end())
+		{
+			body2.velocity = glm::reflect(body2.velocity, normal);
+		}		
+		else if (std::find(walls.begin(), walls.end(), e2) != walls.end())
+		{
+			body1.velocity = glm::reflect(body1.velocity, normal);
+		}
+		else
+		{
+			body1.velocity = glm::reflect(body1.velocity, normal);
+			body2.velocity = glm::reflect(body2.velocity, normal);
+			HandleColorCollision(e1, e2);
+		}
+	}
+
+	void HandleColorCollision(entt::entity e1, entt::entity e2)
+	{
+		auto &color1 = ecsHandler->GetComponent<ColorComponent>(e1);
+		auto &color2 = ecsHandler->GetComponent<ColorComponent>(e2);
+
+		if (color1.color == color2.color)
+			return;
+		else if (color1.color == RED and color2.color == GREEN
+			or color1.color == GREEN and color2.color == RED)
+			{
+				// Set both to RED
+				color1.material->SetDiffuseColor(getColor(RED));
+				color2.material->SetDiffuseColor(getColor(RED));
+			}
+		else if (color1.color == GREEN and color2.color == BLUE
+			or color1.color == BLUE and color2.color == GREEN)
+			{
+				// Set both to GREEN
+				color1.material->SetDiffuseColor(getColor(GREEN));
+				color2.material->SetDiffuseColor(getColor(GREEN));
+			}
+		else if (color1.color == BLUE and color2.color == RED
+			or color1.color == RED and color2.color == BLUE)
+			{
+				// Set both to BLUE
+				color1.material->SetDiffuseColor(getColor(BLUE));
+				color2.material->SetDiffuseColor(getColor(BLUE));
+			}
 	}
 
 private:
 	MonaECS::ECSHandler* ecsHandler;
 	MonaECS::StatsSystem statsSystem;
-	ExampleClassUsingEvent exampleClass;
+	std::vector<entt::entity> walls;
 	float time = 0.0f;
 };
 int main()
 {
-	MinimalSetup app;
+	ECSExample app;
 	Mona::Engine engine(app);
 	engine.StartMainLoop();
 }
