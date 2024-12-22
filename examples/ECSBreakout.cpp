@@ -101,19 +101,24 @@ public:
 
     void OnColorChange(const MonaECS::ColorChangeEvent &event)
     {
-        entt::registry &registry = ecs->GetRegistry();
-        auto ent = event.entity;
-        auto stat = registry.get<MonaECS::Stats>(ent);
-        std::cout << stat.health << std::endl;
-        m_meshHandle->SetMaterial(m_materialVector[static_cast<int>(stat.state)]);
+        if (ent == event.entity)
+        {
+            entt::registry &registry = ecs->GetRegistry();
+            auto stat = registry.get<MonaECS::Stats>(ent);
+            std::cout << stat.health << std::endl;
+            m_meshHandle->SetMaterial(m_materialVector[static_cast<int>(stat.state)]);
+        }
     }
     void OnDestroyGameObjectEvent(const MonaECS::DestroyGameObjectEvent &event)
     {
-        ecs->UnsubscribeEvent<MonaECS::ColorChangeEvent, Block, &Block::OnColorChange>(*this);
-        ecs->UnsubscribeEvent<MonaECS::DestroyGameObjectEvent, Block, &Block::OnDestroyGameObjectEvent>(*this);
-        ecs->DestroyEntity(ent);
-        m_blockTransform->Translate(glm::vec3(100.0f));
-        m_world->DestroyGameObject(*this);
+        if (ent == event.entity)
+        {
+            ecs->UnsubscribeEvent<MonaECS::ColorChangeEvent, Block, &Block::OnColorChange>(*this);
+            ecs->UnsubscribeEvent<MonaECS::DestroyGameObjectEvent, Block, &Block::OnDestroyGameObjectEvent>(*this);
+            ecs->DestroyEntity(ent);
+            m_blockTransform->Translate(glm::vec3(100.0f));
+            m_world->DestroyGameObject(*this);
+        }
     }
 
 private:
@@ -232,29 +237,6 @@ public:
     }
 
 private:
-    glm::vec3 GetNormals(glm::vec3 pos)
-    {
-        if (pos.x < -17.5f)
-        {
-            return glm::vec3(-1.0f, 0.0f, 0.0f);
-        }
-        else if (pos.x > 17.5f)
-        {
-            return glm::vec3(1.0f, 0.0f, 0.0f);
-        }
-        else if (pos.y > 25.0f)
-        {
-            return glm::vec3(0.0f, -1.0f, 0.0f);
-        }
-        else if (pos.y < -4.0f)
-        {
-            return glm::vec3(0.0f, 1.0f, 0.0f);
-        }
-        else
-        {
-            return glm::vec3(0.0f);
-        }
-    }
     Mona::TransformHandle m_transform;
     Mona::TransformHandle m_ballTransform;
     Mona::RigidBodyHandle m_ballRigidBody;
@@ -283,7 +265,9 @@ public:
         world.CreateGameObject<Wall>(glm::vec3(-sideWallOffset, 0.0f, 0.0f), sideWallScale);
         world.CreateGameObject<Wall>(glm::vec3(sideWallOffset, 0.0f, 0.0f), sideWallScale);
 
-        world.CreateGameObject<Block>(glm::vec3(2.0f, 15.0f, 0.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+        world.CreateGameObject<Block>(glm::vec3(10.0f, 15.0f, 0.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+        world.CreateGameObject<Block>(glm::vec3(0.0f, 15.0f, 0.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+        world.CreateGameObject<Block>(glm::vec3(-10.0f, 15.0f, 0.0f), glm::vec3(3.0f, 1.0f, 1.0f));
 
         world.CreateGameObject<Paddle>();
 

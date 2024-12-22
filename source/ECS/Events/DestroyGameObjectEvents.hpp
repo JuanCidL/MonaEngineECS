@@ -7,8 +7,7 @@ namespace MonaECS
 {
     struct DestroyGameObjectEvent
     {
-        DestroyGameObjectEvent() = default;
-        // entt::entity entity;
+        entt::entity entity;
     };
 }
 

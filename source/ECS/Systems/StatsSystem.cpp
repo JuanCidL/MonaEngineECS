@@ -35,7 +35,7 @@ namespace MonaECS
                 }
                 else if (stats.health <= 0.0f)
                 {
-                    eventManager.Publish<DestroyGameObjectEvent>({});
+                    eventManager.Publish<DestroyGameObjectEvent>({entity});
                 }
                 else
                 {
