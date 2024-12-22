@@ -1,17 +1,18 @@
 #pragma once
-#ifndef ENTT_COMPONENT_MANAGER_HPP
-#define ENTT_COMPONENT_MANAGER_HPP
+#ifndef ECS_COMPONENT_MANAGER_HPP
+#define ECS_COMPONENT_MANAGER_HPP
 #include <entt/entt.hpp>
 #include <unordered_map>
 #include <typeindex>
+#include "../World/World.hpp"
 
-namespace Mona
+namespace MonaECS
 {
-    class EnTTComponentManager
+    class ComponentManager
     {
     public:
-        EnTTComponentManager() = default;
-        ~EnTTComponentManager() = default;
+        ComponentManager() = default;
+        ~ComponentManager() = default;
 
         entt::registry& GetRegistry() noexcept
         {
@@ -44,6 +45,12 @@ namespace Mona
         }
 
         template<typename ComponentType>
+        ComponentType& GetComponent(entt::entity entity)
+        {
+            return m_registry.get<ComponentType>(entity);
+        }
+
+        template<typename ComponentType>
         void RemoveComponent(entt::entity entity)
         {
             m_registry.remove<ComponentType>(entity);
@@ -68,9 +75,20 @@ namespace Mona
             return m_componentCount[typeid(ComponentType)];
         }
 
+        void SetWorld(Mona::World *world)
+        {
+            m_world = world;
+        }
+
+        Mona::World* GetWorld()
+        {
+            return m_world;
+        }
+
     private:
         entt::registry m_registry;
         std::unordered_map<std::type_index, uint32_t> m_componentCount;
+        Mona::World *m_world;
     };   
 }
 

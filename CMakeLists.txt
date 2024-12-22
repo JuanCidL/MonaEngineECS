@@ -78,6 +78,7 @@ if (${MONA_BUILD_EXAMPLES})
 		Example5_IKMultipleTerrains
 		Example6_IKMultipleCharacters
 		Example7_ECSExample
+		Example8_ECSBreakout
 
 		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 			COMPONENT MonaEngineExamples_Runtime
