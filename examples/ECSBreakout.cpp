@@ -144,9 +144,14 @@ public:
 private:
     void OnInputEvent(const MonaECS::MoveInputEvent &event)
     {
-        // std::cout << "Move input event detected" << std::endl;
-        std::cout << "Move input event detected" << event.moveDir.x << " " << event.moveDir.y << " " << event.moveDir.z << std::endl;
+        if (event.moveDir.y == 0 && event.moveDir.z == 0)
+        {
+            glm::vec3 direction = event.moveDir * 0.1f;
+            glm::vec3 pos = m_paddleTransform->GetLocalTranslation();
+            m_paddleTransform->SetTranslation(pos + direction);
+        }
     }
+
     const glm::vec3 &m_scale = glm::vec3(4.0f, 1.0f, 1.0f);
     Mona::TransformHandle m_transform;
     Mona::TransformHandle m_paddleTransform;
