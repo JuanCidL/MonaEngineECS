@@ -1,9 +1,9 @@
 #include "./BaseSystem.hpp"
 #include "./StatsSystem.hpp"
-#include "../Components/StatComponents.hpp"
+#include "../Components.hpp"
 #include "../ComponentManager.hpp"
 #include "../EventManager.hpp"
-#include "../Events/ColorChangeEvents.hpp"
+#include "../Events.hpp"
 #include <iostream>
 
 namespace MonaECS
@@ -35,7 +35,7 @@ namespace MonaECS
                 }
                 else if (stats.health <= 0.0f)
                 {
-                    componentManager.DestroyEntity(entity);
+                    eventManager.Publish<DestroyGameObjectEvent>({});
                 }
                 else
                 {

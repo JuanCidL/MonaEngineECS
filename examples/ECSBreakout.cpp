@@ -1,3 +1,4 @@
+#include <unordered_map>
 #include "MonaEngine.hpp"
 #include "ECS/ECS.hpp"
 #include "ECS/Systems.hpp"
@@ -64,6 +65,7 @@ public:
     ~Block() = default;
     virtual void UserStartUp(Mona::World &world) noexcept
     {
+        m_world = &world;
         ecs = world.GetECSHandler();
         m_transform = world.AddComponent<Mona::TransformComponent>(*this);
         auto block = world.CreateGameObject<Mona::GameObject>();
@@ -86,20 +88,32 @@ public:
 
         m_meshHandle = world.AddComponent<Mona::StaticMeshComponent>(block, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), m_materialVector[0]);
 
-        auto blockEntity = ecs->CreateEntity();
-        ecs->AddComponent<MonaECS::TransformComponent>(blockEntity, &m_blockTransform);
-        ecs->AddComponent<MonaECS::BodyComponent>(blockEntity, glm::vec3(0.0f), glm::vec3(0.0f), 10.0f);
-        ecs->AddComponent<MonaECS::ColliderComponent>(blockEntity, m_scale, false);
-        ecs->AddComponent<MonaECS::Stats>(blockEntity);
+        ent = ecs->CreateEntity();
+        ecs->AddComponent<MonaECS::TransformComponent>(ent, &m_blockTransform);
+        ecs->AddComponent<MonaECS::BodyComponent>(ent, glm::vec3(0.0f), glm::vec3(0.0f), 10.0f);
+        ecs->AddComponent<MonaECS::ColliderComponent>(ent, m_scale, false);
+        ecs->AddComponent<MonaECS::Stats>(ent);
         ecs->SubscribeEvent<MonaECS::ColorChangeEvent, Block, &Block::OnColorChange>(*this);
+        ecs->SubscribeEvent<MonaECS::DestroyGameObjectEvent, Block, &Block::OnDestroyGameObjectEvent>(*this);
     }
+
+    virtual void UserShutDown(Mona::World &world) noexcept {};
 
     void OnColorChange(const MonaECS::ColorChangeEvent &event)
     {
         entt::registry &registry = ecs->GetRegistry();
         auto ent = event.entity;
         auto stat = registry.get<MonaECS::Stats>(ent);
+        std::cout << stat.health << std::endl;
         m_meshHandle->SetMaterial(m_materialVector[static_cast<int>(stat.state)]);
+    }
+    void OnDestroyGameObjectEvent(const MonaECS::DestroyGameObjectEvent &event)
+    {
+        ecs->UnsubscribeEvent<MonaECS::ColorChangeEvent, Block, &Block::OnColorChange>(*this);
+        ecs->UnsubscribeEvent<MonaECS::DestroyGameObjectEvent, Block, &Block::OnDestroyGameObjectEvent>(*this);
+        ecs->DestroyEntity(ent);
+        m_blockTransform->Translate(glm::vec3(100.0f));
+        m_world->DestroyGameObject(*this);
     }
 
 private:
@@ -108,7 +122,9 @@ private:
     Mona::TransformHandle m_transform;
     Mona::TransformHandle m_blockTransform;
     Mona::StaticMeshHandle m_meshHandle;
+    Mona::World *m_world;
     MonaECS::ECSHandler *ecs;
+    entt::entity ent;
     std::vector<std::shared_ptr<Mona::DiffuseFlatMaterial>> m_materialVector;
 };
 
@@ -136,7 +152,6 @@ public:
         ecs->AddComponent<MonaECS::TransformComponent>(paddleEntity, &m_paddleTransform);
         ecs->AddComponent<MonaECS::BodyComponent>(paddleEntity, glm::vec3(0.0f), glm::vec3(0.0f), 10.0f);
         ecs->AddComponent<MonaECS::ColliderComponent>(paddleEntity, m_scale, false);
-        ecs->AddComponent<MonaECS::Stats>(paddleEntity);
         ecs->AddComponent<MonaECS::MoveInputComponent>(paddleEntity);
         ecs->SubscribeEvent<MonaECS::MoveInputEvent, Paddle, &Paddle::OnInputEvent>(*this);
     }
@@ -152,7 +167,7 @@ private:
         }
     }
 
-    const glm::vec3 &m_scale = glm::vec3(4.0f, 1.0f, 1.0f);
+    const glm::vec3 &m_scale = glm::vec3(3.0f, 0.5f, 1.0f);
     Mona::TransformHandle m_transform;
     Mona::TransformHandle m_paddleTransform;
 };
@@ -167,17 +182,17 @@ public:
         ecs = world.GetECSHandler();
         m_transform = world.AddComponent<Mona::TransformComponent>(*this);
         auto &meshManager = Mona::MeshManager::GetInstance();
-        auto ball = world.CreateGameObject<Mona::GameObject>();
+        m_ballHandle = world.CreateGameObject<Mona::GameObject>();
         float ballRadius = 0.5f;
 
-        m_ballTransform = world.AddComponent<Mona::TransformComponent>(ball);
+        m_ballTransform = world.AddComponent<Mona::TransformComponent>(m_ballHandle);
         m_ballTransform->SetRotation(m_transform->GetLocalRotation());
         m_ballTransform->SetTranslation(m_transform->GetLocalTranslation() + glm::vec3(0.0f, 2.0f, 0.0f));
         m_ballTransform->SetScale(glm::vec3(ballRadius));
 
         auto ballMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
         ballMaterial->SetDiffuseColor(glm::vec3(0.75f, 0.3f, 0.3f));
-        world.AddComponent<Mona::StaticMeshComponent>(ball, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Sphere), ballMaterial);
+        world.AddComponent<Mona::StaticMeshComponent>(m_ballHandle, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Sphere), ballMaterial);
 
         auto ballEntity = ecs->CreateEntity();
         ecs->AddComponent<MonaECS::TransformComponent>(ballEntity, &m_ballTransform);
@@ -189,13 +204,11 @@ public:
     {
         auto e1 = event.entity1;
         auto e2 = event.entity2;
+        auto normal = event.normal;
         entt::registry &registry = ecs->GetRegistry();
 
         auto &transform1 = ecs->GetComponent<MonaECS::TransformComponent>(e1);
         auto &transform2 = ecs->GetComponent<MonaECS::TransformComponent>(e2);
-
-        glm::vec3 pos1 = (*transform1.tHandle)->GetLocalTranslation();
-        glm::vec3 pos2 = (*transform2.tHandle)->GetLocalTranslation();
 
         auto &body1 = ecs->GetComponent<MonaECS::BodyComponent>(e1);
         auto &body2 = ecs->GetComponent<MonaECS::BodyComponent>(e2);
@@ -204,29 +217,18 @@ public:
         {
             auto &stats = ecs->GetComponent<MonaECS::Stats>(e1);
             stats.health -= 40;
-            glm::vec3 new_direction = glm::normalize(glm::vec3((pos2.x - pos1.x), -body2.velocity.y, 0.0f));
-            float v_mod = std::sqrt(std::pow(body2.velocity.x, 2) + std::pow(body2.velocity.y, 2));
-            float a_mod = std::sqrt(std::pow(body2.acceleration.x, 2) + std::pow(body2.acceleration.y, 2));
-            body2.velocity = new_direction * v_mod;
-            body2.acceleration = new_direction * a_mod;
-            return;
         }
         else if (registry.any_of<MonaECS::Stats>(e2))
         {
             auto &stats = ecs->GetComponent<MonaECS::Stats>(e2);
             stats.health -= 40;
-            glm::vec3 new_direction = glm::normalize(glm::vec3((pos1.x - pos2.x), -body1.velocity.y, 0.0f));
-            float v_mod = std::sqrt(std::pow(body1.velocity.x, 2) + std::pow(body1.velocity.y, 2));
-            float a_mod = std::sqrt(std::pow(body1.acceleration.x, 2) + std::pow(body1.acceleration.y, 2));
-            body1.velocity = new_direction * v_mod;
-            body1.acceleration = new_direction * a_mod;
-            return;
         }
 
-        body1.acceleration = glm::reflect(body1.acceleration, GetNormals(pos1));
-        body2.acceleration = glm::reflect(body2.acceleration, GetNormals(pos2));
-        body1.velocity = glm::reflect(body1.velocity, GetNormals(pos1));
-        body2.velocity = glm::reflect(body2.velocity, GetNormals(pos2));
+        body1.velocity = glm::reflect(body1.velocity, normal);
+        body2.velocity = glm::reflect(body2.velocity, normal);
+
+        (*transform1.tHandle)->SetTranslation((*transform1.tHandle)->GetLocalTranslation() + body1.velocity * 0.02f);
+        (*transform2.tHandle)->SetTranslation((*transform2.tHandle)->GetLocalTranslation() + body2.velocity * 0.02f);
     }
 
 private:
@@ -256,6 +258,7 @@ private:
     Mona::TransformHandle m_transform;
     Mona::TransformHandle m_ballTransform;
     Mona::RigidBodyHandle m_ballRigidBody;
+    Mona::GameObjectHandle<Mona::GameObject> m_ballHandle;
     MonaECS::ECSHandler *ecs;
     std::shared_ptr<Mona::AudioClip> m_ballBounceSound;
 };
@@ -271,6 +274,7 @@ public:
         world.SetGravity(glm::vec3(0.0f, 0.0f, 0.0f));
         world.SetAmbientLight(glm::vec3(0.3f));
         CreateBasicCameraWithMusicAndLight(world);
+
         world.CreateGameObject<Ball>();
 
         world.CreateGameObject<Wall>(glm::vec3(0.0f, 26.0f, 0.0f), glm::vec3(18.0f, 1.0f, 1.0f));
@@ -280,6 +284,7 @@ public:
         world.CreateGameObject<Wall>(glm::vec3(sideWallOffset, 0.0f, 0.0f), sideWallScale);
 
         world.CreateGameObject<Block>(glm::vec3(2.0f, 15.0f, 0.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+
         world.CreateGameObject<Paddle>();
 
         ecs->RegisterSystem<MonaECS::StatsSystem>();
@@ -301,7 +306,6 @@ public:
 
 private:
     MonaECS::ECSHandler *ecs;
-    MonaECS::StatsSystem statsSystem;
 };
 int main()
 {
