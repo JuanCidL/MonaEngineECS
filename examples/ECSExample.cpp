@@ -253,15 +253,21 @@ public:
 		if (std::find(walls.begin(), walls.end(), e1) != walls.end())
 		{
 			body2.velocity = glm::reflect(body2.velocity, normal);
+			(*transform2.tHandle)->SetTranslation((*transform2.tHandle)->GetLocalTranslation() + body2.velocity * 0.02f);
 		}		
 		else if (std::find(walls.begin(), walls.end(), e2) != walls.end())
 		{
 			body1.velocity = glm::reflect(body1.velocity, normal);
+			(*transform1.tHandle)->SetTranslation((*transform1.tHandle)->GetLocalTranslation() + body1.velocity * 0.02f);
 		}
 		else
 		{
 			body1.velocity = glm::reflect(body1.velocity, normal);
 			body2.velocity = glm::reflect(body2.velocity, normal);
+
+			(*transform1.tHandle)->SetTranslation((*transform1.tHandle)->GetLocalTranslation() + body1.velocity * 0.02f);
+			(*transform2.tHandle)->SetTranslation((*transform2.tHandle)->GetLocalTranslation() + body2.velocity * 0.02f);
+
 			HandleColorCollision(e1, e2);
 		}
 	}
