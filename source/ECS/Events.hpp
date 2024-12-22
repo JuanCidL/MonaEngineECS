@@ -4,5 +4,7 @@
 
 #include "./Events/CollisionEvents.hpp"
 #include "./Events/InputEvents.hpp"
+#include "./Events/ColorChangeEvents.hpp"
+#include "./Events/DestroyGameObjectEvents.hpp"
 
 #endif

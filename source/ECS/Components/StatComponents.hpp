@@ -1,6 +1,7 @@
 #pragma once
 #ifndef STAT_COMPONENTS_HPP
 #define STAT_COMPONENTS_HPP
+#include "../../MonaEngine.hpp"
 #include <glm/glm.hpp>
 
 namespace MonaECS
@@ -14,12 +15,10 @@ namespace MonaECS
     struct Stats
     {
         float health = 100.0f;
-        float speed = 10.0f;
         StatsColors state = StatsColors::red;
-
-        glm::vec3 getColor() // tengo la duda con que esto esté acá
+        glm::vec3 GetColor()
         {
-            switch (state)
+            switch (this->state)
             {
             case StatsColors::red:
                 return glm::vec3(1.0f, 0.0f, 0.0f);
@@ -27,6 +26,8 @@ namespace MonaECS
                 return glm::vec3(0.0f, 1.0f, 0.0f);
             case StatsColors::blue:
                 return glm::vec3(0.0f, 0.0f, 1.0f);
+            default:
+                return glm::vec3(1.0f, 1.0f, 1.0f);
             }
         }
     };

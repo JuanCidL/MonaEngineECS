@@ -2,18 +2,19 @@
 #ifndef ECS_STATS_SYSTEM_HPP
 #define ECS_STATS_SYSTEM_HPP
 
-namespace MonaECS {
+namespace MonaECS
+{
     class BaseSystem;
-    
-    class StatsSystem : public BaseSystem {
+
+    class StatsSystem : public BaseSystem
+    {
     public:
         StatsSystem() = default;
         ~StatsSystem() = default;
-        void Update(ComponentManager& componentManager, EventManager& eventManager, float deltaTime) noexcept;
+        void Update(ComponentManager &componentManager, EventManager &eventManager, float deltaTime) noexcept;
 
     private:
-        float time = 0.0f;
+        float s_time = 0.0f;
     };
 }
-
 #endif
