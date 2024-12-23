@@ -105,7 +105,6 @@ public:
         {
             entt::registry &registry = ecs->GetRegistry();
             auto stat = registry.get<MonaECS::Stats>(ent);
-            std::cout << stat.health << std::endl;
             m_meshHandle->SetMaterial(m_materialVector[static_cast<int>(stat.state)]);
         }
     }
@@ -231,6 +230,9 @@ public:
 
         body1.velocity = glm::reflect(body1.velocity, normal);
         body2.velocity = glm::reflect(body2.velocity, normal);
+
+        body1.acceleration = glm::reflect(body1.acceleration, normal);
+        body2.acceleration = glm::reflect(body2.acceleration, normal);
 
         (*transform1.tHandle)->SetTranslation((*transform1.tHandle)->GetLocalTranslation() + body1.velocity * 0.02f);
         (*transform2.tHandle)->SetTranslation((*transform2.tHandle)->GetLocalTranslation() + body2.velocity * 0.02f);
